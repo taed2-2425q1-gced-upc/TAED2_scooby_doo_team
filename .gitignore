@@ -1,5 +1,5 @@
 # Data
-/data/
+/data/**/*.parquet
 !data/**/*.dvc
 
 # Mac OS-specific storage files
