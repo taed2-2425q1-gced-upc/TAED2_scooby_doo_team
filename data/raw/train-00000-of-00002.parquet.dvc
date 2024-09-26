@@ -1,0 +1,5 @@
+outs:
+- md5: 50f0afaaab76f975e0c5d86caf7ed7c6
+  size: 330245704
+  hash: md5
+  path: train-00000-of-00002.parquet
