@@ -7,6 +7,8 @@ train:
   algorithm: "VisualTransformer"
   random_state: 2024
   combinations: 5
+  model_name: "google/vit-base-patch16-224"
+  targets: ["cat","dog"]
   hyperparameters:
     batch_size: [8, 16, 32]                 
     learning_rate: [1e-5, 5e-5, 1e-4]       
