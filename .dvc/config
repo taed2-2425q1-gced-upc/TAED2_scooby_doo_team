@@ -1,0 +1,4 @@
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/PabloGete/TAED2_scooby_doo_team.dvc
