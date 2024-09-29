@@ -68,6 +68,7 @@ configs:
   - [Licensing Information](#licensing-information)
   - [Citation Information](#citation-information)
   - [Contributions](#contributions)
+  - [Dataset Card Revision](#datasetcard-revision) 
 
 ## Dataset Description
 
@@ -220,3 +221,14 @@ edition = {Proceedings of 14th ACM Conference on Computer and Communications Sec
 ### Contributions
 Thanks to [@nateraw](https://github.com/nateraw) for adding this dataset.
 
+## Dataset Card Revision
+
+- **Pablo Gete**: pablo.gete@estudiantat.upc.edu
+
+- **Oriol López**: oriol.lopez.petit@estudiantat.upc.edu
+
+- **Xavier Pacheco**: xavier.pacheco.bach@estudiantat.upc.edu
+
+- **Xiao Li Segarra**: xiao.li.segarra@estudiantat.upc.edu
+
+- **David Torrecilla**: david.torrecilla.tolosa@estudiantat.upc.edu
