@@ -16,7 +16,7 @@ By pre-training the model, it learns an inner representation of images that can 
 
 By fine-tunning the model, it learns threats of cat and dog images that allow the model to extract relevant features of the two types of images, allowing the model to learn how to classify properly different images than the ones used for training.
 
-- **Developed by:** [Model Developers](#model-developes)
+- **Developed by:** [Model Developers](#model-developers)
 - **Model type:** Vision Transformet
 - **Language(s) (NLP):** Not applicable (vision task)
 - **Finetuned from model:** ImageNet-21k
