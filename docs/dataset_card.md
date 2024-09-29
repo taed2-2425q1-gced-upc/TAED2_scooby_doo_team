@@ -68,7 +68,7 @@ configs:
   - [Licensing Information](#licensing-information)
   - [Citation Information](#citation-information)
   - [Contributions](#contributions)
-  - [Dataset Card Revision](#datasetcard-revision) 
+  - [Dataset Card Revision](#dataset-card-revision) 
 
 ## Dataset Description
 
