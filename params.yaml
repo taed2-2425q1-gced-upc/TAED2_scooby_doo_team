@@ -1,20 +1,16 @@
 prepare:
-  train_size: 0.6
-  test_size: 0.2
+  train_size: 0.01
+  test_size: 0.025
+  valid_size: 0.7
   random_state: 2024
 train:
-  algorithm: "VisualTransformer"
-  random_state: 2024
   combinations: 5
-  model_name: "google/vit-base-patch16-224"
   targets: ["cat","dog"]
   hyperparameters:
+    algorithm: ["VisualTransformer"]
+    model_name: ["google/vit-base-patch16-224"]
     batch_size: [8, 16, 32]                 
-    learning_rate: [1e-5, 5e-5, 1e-4]       
-    num_epochs: [5]                 
-    weight_decay: [0.0, 0.01, 0.1]          
-    hidden_size: [768, 512]                 
-    num_hidden_layers: [12, 16]             
-    num_attention_heads: [12, 16]
-    optimizer: ["adam", "sgd"]
-    epochs_no_improve: [3]     
+    learning_rate: [0.00001, 0.00005, 0.0001]    
+    num_epochs: [3,5,7]                 
+    weight_decay: [0.0, 0.01, 0.1]                                   
+    optimizer: ["adam", "sdg"]

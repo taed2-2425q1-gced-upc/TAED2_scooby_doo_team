@@ -1,30 +1,40 @@
 import pickle
-import mlflow
 import torch
 import random
 import itertools
 import yaml
+from PIL import Image
+from torchvision import transforms
 
 import pandas as pd
 import torch.nn as nn
 import torch.utils.data as data
 import numpy as np
+from datetime import datetime
 
 from pathlib import Path
-from transformers import ViTForImageClassification, ViTFeatureExtractor,Trainer, TrainingArguments
-from src.config import PROCESSED_DATA_DIR
+from transformers import ViTForImageClassification
+from src.config import PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES,MODELS_DIR
 from typing import Any
 
-def load_params_train(parameters_file: str) -> Any:
-    # read the parameters file, section "train"
-    with open(parameters_file, "r", encoding="utf8") as params_file:
+
+
+
+def load_params_train(parameters_path: str) -> Any:
+    """
+    Loads the parameters from a YAML file
+    """
+
+    with open(parameters_path, "r") as params_file:
         try:
             params = yaml.safe_load(params_file)
             return params["train"]
         except yaml.YAMLError as exc:
             print(exc)
             return None
-        return params
+
+
+
 
 def combine_hyperparameters(values: tuple[tuple[Any]], number_of_combinations: int) -> Any:
     """
@@ -32,32 +42,38 @@ def combine_hyperparameters(values: tuple[tuple[Any]], number_of_combinations: i
     """
 
     combinations = list(itertools.product(*values))
-    return random.sample(combinations, number_of_combinations) 
+    combinations = random.sample(combinations, number_of_combinations)
+    return combinations 
 
-def get_model(algorithm: str, model_name: str, targets: list[str], hidden_size: int, number_hidden_layers: int, number_attention_heads) -> Any:
+
+
+
+def get_model(algorithm: str, model_name: str, targets: list[str]) -> Any:
+    """
+    Creates and returns a model based on the specified algorithm and model name
+    """
+
     if algorithm == 'VisualTransformer':
         return ViTForImageClassification.from_pretrained(
             model_name,
             num_labels=len(targets),
-            hidden_size=hidden_size,
-            num_hidden_layers=number_hidden_layers,
-            num_attention_heads=number_attention_heads
+            ignore_mismatched_sizes=True
         )
+
+
+
 
 def get_optimizer(algorithm: str, learning_rate: float, model: Any) -> Any:
     """
     Creates and returns an optimizer for the given model based on the specified algorithm
     """
 
-    if algorithm == 'Adam':
+    if algorithm == 'adam':
         return torch.optim.Adam(model.parameters(), lr=learning_rate)
-    elif algorithm == 'SGD':
+    elif algorithm == 'sdg':
         return torch.optim.SGD(model.parameters(), lr=learning_rate)
     
 
-def get_feature_extractor(algorithm: str, model_name: str) -> Any:
-    if algorithm == 'VisualTransformer':
-        return ViTFeatureExtractor.from_pretrained(model_name)
 
 
 def prepare_hyperparameters_combinations(parameters: dict[str,Any]) -> tuple[dict[str,Any], list[str]]: 
@@ -71,95 +87,137 @@ def prepare_hyperparameters_combinations(parameters: dict[str,Any]) -> tuple[dic
 
     return  hyperparameter_combinations, hyperparameter_names
 
-def preapare_dataloaders():
-    # TODO: This funciton will change depending on the definitions of the datasets
-    # get the training dataloader
-    # get the test dataloader
 
-    return ..., ...
 
-def prepare_training_objects(parameters_run: dict[str,Any]):
+
+def load_image(image_path: str) -> Any:
+    """
+    Creates and returns a PIL image from the specified path
+    """
+
+    image = Image.open(image_path).convert("RGB")  # Asegúrate de que la imagen esté en RGB
+    return image
+
+
+
+
+def preapare_train_dataloaders(input_folder_path,input_train_images_path: Path,batch_size: int) -> data.DataLoader:
+    """
+    We get the training dataloaders
+    """
+
+    X_train = pd.read_csv(input_folder_path / "X_train.csv")
+    y_train = pd.read_csv(input_folder_path / "y_train.csv")
+
+    #Define the transformations for the images
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+    ])
+
+    training_images = [transform(load_image(str(input_train_images_path / f"image_train_{i}.jpg"))) for i in range(len(X_train))]
+    train_dataset = data.TensorDataset(torch.stack(training_images), torch.tensor(y_train.values).long())
+    train_dataloader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+    return train_dataloader
+
+
+
+
+def prepare_training_objects(targets,parameters_run: dict[str,Any]):
     """
     Prepares the training objects, including the model, optimizer, device, loss function, 
     and feature extractor based on the provided parameters
     """
 
-    model = get_model(parameters_run['algorithm'],parameters_run['model_name'],parameters_run['targets'],parameters_run["hidden_size"],parameters_run["num_hidden_layers"],parameters_run['num_attention_heads'])
+    model = get_model(parameters_run['algorithm'],parameters_run['model_name'],targets)
     optimizer = get_optimizer(parameters_run['optimizer'],parameters_run['learning_rate'], model)
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loss_function = nn.CrossEntropyLoss()
-    feature_extractor = get_feature_extractor(parameters_run['algorithm'], parameters_run['model_name'])
 
-    return model, optimizer, device, loss_function, feature_extractor
+    return model, optimizer, device, loss_function
 
 
-def train(parameters_run: dict[str, Any], train_dataloader: data.DataLoader, test_dataloader: data.DataLoader, model: Any, optimizer: Any, device: Any, loss_function: Any, feature_extractor: Any) -> None:
+
+
+def train(parameters_run: dict[str, Any], model: Any, optimizer: Any, device: Any, loss_function: Any) -> None:
     """
-    Trains and evaluates a model for a specified number of epochs.
+    Trains a model for a specified number of epochs.
     """
-    
-    best_lost = np.inf
-    best_accuracy = 0
-    best_model = None
-    no_improvement = 0
-    for epoch in range(parameters_run["num_epochs"]):      
-        model.train()  
-        
+    train_dataloader = preapare_train_dataloaders(PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES,parameters_run["batch_size"])
+
+    model.to(device)
+    model.train()
+    loss_per_step = []
+    loss_per_epoch = []
+    for epoch in range(parameters_run["num_epochs"]):   
+        print(f"Epoch {epoch+1}")    
         total_training_loss = 0
         for step, (x, y) in enumerate(train_dataloader):
-            x = torch.tensor(np.stack(feature_extractor(x.numpy())['pixel_values'], axis=0)).float()
-            x, y  = x.to(device), y.to(device)
-            output = model(x)
-            loss = loss_function(output,y)
+            print(f"Step {step+1} and len of batch {len(x)}")
             optimizer.zero_grad()  
+            x, y  = x.to(device), y.to(device)
+            y = y.squeeze()
+            output = model(x).logits
+            loss = loss_function(output,y)
             loss.backward()       
             optimizer.step() 
             total_training_loss += loss.item()
+            loss_per_step.append(loss.item())
+        loss_per_epoch.append(sum(loss_per_step)/len(loss_per_step))
         print(f"Epoch {epoch+1}/{parameters_run['num_epochs']}, Average Training Loss: {total_training_loss / (step + 1)}") 
 
-        model.eval()
-        total_validation_loss = 0
-        total_validation_correct = 0   
-        total_validation_samples = 0   
-        total_validation_loss = 0
-        with torch.no_grad(): 
-            for step, (x,y) in enumerate(test_dataloader):
-                output = model(x)
-                loss = loss_function(output, y)
-                total_validation_loss += loss.item()
-                _, predicted = torch.max(output.data, 1) 
-                total_validation_correct += (predicted == y).sum().item()
-                total_validation_samples += y.size(0)
-        if total_validation_loss < best_lost:
-            best_lost = total_validation_loss
-            best_accuracy = total_validation_correct / total_validation_samples
-            best_model = model
-        else:
-            no_improvement += 1
-            if no_improvement == parameters_run['early_stopping']:
-                print(f"Early stopping at epoch {epoch+1}")
-                break
-        print(f"Epoch {epoch+1}/{parameters_run['num_epochs']}, Average Validation Loss: {total_validation_loss / (step + 1)}, Validation Accuracy: {validation_accuracy:.4f}")
+    return model,loss_per_epoch
         
 
 
-def main_train():
-    experiment_name = 'Dogs and cats classification'
-    parameters = load_params_train('settings_path')
 
+def main_train():
+    """
+    Main function for the training process
+    """
+
+    params_path = Path("params.yaml")
+    parameters = load_params_train(params_path)
+
+    #Hyperparameters that we are going to use for the training
     hyperparameter_combinations, hyperparameter_names = prepare_hyperparameters_combinations(parameters)
     
-    train_dataloader, test_dataloader = preapare_dataloaders()
-    
-    #TODO VER SI ESTO LO AGREGA SOLO O HAY QUE HACERLO MANUAL
-    mlflow.set_experiment(experiment_name)
-    mlflow.sklearn.autolog(log_model_signatures=False, log_datasets=False)
+    targets = parameters['targets']
+
+    Path("models").mkdir(exist_ok=True)
+    parameters_dict = {}
+    metrics_dict = {}
+
     for combination in hyperparameter_combinations:
         parameters_run = dict(zip(hyperparameter_names,combination))
-        with mlflow.start_run():
-            model, optimizer, device, loss_function, feature_extractor = prepare_training_objects(parameters_run)
-            train(parameters_run, train_dataloader, test_dataloader, model, optimizer, device, loss_function, feature_extractor)
-    #TODO SAVE THE BEST MODEL
+        model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
+        model,loss_per_epoch = train(parameters_run, model, optimizer, device, loss_function)
+
+        #Name of the model: algorithm_day_month_year_min
+        now = datetime.now()
+        run_id = f"day_{now.strftime('%d')}_month_{now.strftime('%m')}_year_{now.strftime('%Y')}_min_{now.strftime('%M')}"
+        model_name = f"{parameters_run['algorithm']}"
+        final_id = f"{model_name}_{run_id}"
+
+        if final_id not in metrics_dict:
+            metrics_dict[final_id] = loss_per_epoch
+
+        if final_id not in parameters_dict:
+            parameters_dict[final_id] = parameters_run
+
+        #Save the model
+        model_name = final_id + ".pkl"
+        with open(MODELS_DIR / model_name, "wb") as pickle_file:
+            pickle.dump(model, pickle_file)
+    return parameters_dict,metrics_dict
+
+
+
+
+
+
+
 
     
 

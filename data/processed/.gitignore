@@ -4,3 +4,6 @@
 /y_train.csv
 /X_valid.csv
 /y_valid.csv
+/train_images/
+/valid_images/
+/test_images/

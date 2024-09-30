@@ -1,10 +1,15 @@
 from pathlib import Path
 import pandas as pd
 import yaml
+import os
+import io
+from PIL import Image
 from sklearn.model_selection import train_test_split
 
 # Importar las rutas desde src.config
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, PROCESSED_TRAIN_IMAGES, PROCESSED_VALID_IMAGES, PROCESSED_TEST_IMAGES
+
+
 
 def load_data(input_folder_path):
     """Carga los archivos Parquet y concatena los DataFrames."""
@@ -16,6 +21,8 @@ def load_data(input_folder_path):
 
     return pd.concat([df1, df2], ignore_index=True)
 
+
+
 def load_params_prepare(params_path):
     """Carga los parámetros desde un archivo YAML."""
     with open(params_path, "r") as params_file:
@@ -25,6 +32,8 @@ def load_params_prepare(params_path):
         except yaml.YAMLError as exc:
             print(exc)
             return None
+
+
 
 def split_data(df, params):
     """Separa los datos en conjuntos de entrenamiento, validación y prueba."""
@@ -36,7 +45,7 @@ def split_data(df, params):
         X,
         y,
         train_size=params["train_size"],
-        test_size=1 - params["train_size"],  
+        test_size=params["test_size"],  
         random_state=params["random_state"],
     )
 
@@ -44,13 +53,28 @@ def split_data(df, params):
     X_valid, X_test, y_valid, y_test = train_test_split(
         X_temp,
         y_temp,
-        test_size=params["test_size"] / (1 - params["train_size"]),  # Ajustar según el tamaño total
+        test_size=1 - params["valid_size"],   # Ajustar según el tamaño total
         random_state=params["random_state"],
     )
-
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
-def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path):
+
+
+def save_images(dataframe, prepared_images_path, prefix):
+    """
+    Saves images from a dataframe to a folder
+    """
+    Path(prepared_images_path).mkdir(exist_ok=True)
+    image_index = 0
+    for _, row in dataframe.iterrows():
+        img_bytes = row['image']['bytes']
+        img = Image.open(io.BytesIO(img_bytes))
+        img.save(prepared_images_path / f"{prefix}_{image_index}.jpg")
+        image_index += 1
+
+
+
+def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path,prepared_train_images_path, prepared_valid_images_path, prepared_test_images_path):
     """Guarda los conjuntos de datos en archivos CSV."""
     Path(prepared_folder_path).mkdir(exist_ok=True)
 
@@ -61,7 +85,14 @@ def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folde
     X_test.to_csv(prepared_folder_path / "X_test.csv", index=False)
     y_test.to_csv(prepared_folder_path / "y_test.csv", index=False)
 
+
+    save_images(X_train, prepared_train_images_path, "image_train")
+    save_images(X_valid, prepared_valid_images_path, "image_valid")
+    save_images(X_test, prepared_test_images_path, "image_test")
+
     print("Data saved successfully.")
+
+
 
 def main_preprocessing():
     """Función principal."""
@@ -69,6 +100,9 @@ def main_preprocessing():
     params_path = Path("params.yaml")
     input_folder_path = RAW_DATA_DIR
     prepared_folder_path = PROCESSED_DATA_DIR
+    prepared_train_images_path = PROCESSED_TRAIN_IMAGES
+    prepared_valid_images_path = PROCESSED_VALID_IMAGES
+    prepared_test_images_path = PROCESSED_TEST_IMAGES
 
     df = load_data(input_folder_path)
     params = load_params_prepare(params_path)
@@ -76,4 +110,4 @@ def main_preprocessing():
     #To ensure use parameters
     if params:
         X_train, X_valid, X_test, y_train, y_valid, y_test = split_data(df, params)
-        save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path)
+        save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path, prepared_train_images_path, prepared_valid_images_path, prepared_test_images_path)

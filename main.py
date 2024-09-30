@@ -1,21 +1,37 @@
 from pathlib import Path
 import os
+import sys
 
 from src.features_data.prepare import main_preprocessing
+from src.modeling.evaluate import main_validation
 from src.modeling.train import main_train
-from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from src.config import PREPROCESSING,TRAINING,MODELS_DIR
+
+
+
 def main():
-    #Preprocessing
-    if not any(file.endswith('.csv') for file in os.listdir(PROCESSED_DATA_DIR)):
-        print("Starting data preprocessing...")
+
+    print("Starting data preprocessing...")
+    if PREPROCESSING:
         main_preprocessing()
 
-    #Trainig and validation
-    print("Starting training and validation...")
-    #main_train()
+    if not TRAINING:
+        #Check if there are models to test
+        pkl_files = [f for f in os.listdir(MODELS_DIR) if f.endswith('.pkl')]
+        if len(pkl_files) == 0:
+            print("No models to evaluate")
+            sys.exit()
+    else: 
+        print("Starting training...")
+        parameters_dict, metrics_dict= main_train()
+        print("Starting validation...")
+        main_validation(parameters_dict,metrics_dict)
+
+    #main_test()
+    
 
 
-    #Test
+    
     print("Starting testing...")
 
 if __name__ == "__main__":
