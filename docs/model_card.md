@@ -39,7 +39,7 @@ By fine-tunning the model, it learns threats of cat and dog images that allow th
 
 ## Uses
 
-<!-- Address questions around how the model is intended to be used, including the foreseeable users of the model and those affected by the model. -->
+The uses can be found following:
 
 ### Direct Use
 
@@ -63,78 +63,70 @@ Users (both direct and downstream) should be made aware of the risks, biases and
 
 ## How to Get Started with the Model
 
-Use the code below to get started with the model.
-
-{{ get_started_code | default("[More Information Needed]", true)}}
+Read carefully the follwoing to start with the model
 
 ## Training Details
 
 ### Training Data
 
-<!-- This should link to a Dataset Card, perhaps with a short stub of information on what the training data is all about as well as documentation related to data pre-processing or additional filtering. -->
+The information on the data used for training this model can be found in the following Dataset Card: (https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/tree/master/docs/dataset_card.md).
 
-{{ training_data | default("[More Information Needed]", true)}}
+It consists on two .parquet files with images of dogs or cats and its labels.
 
 ### Training Procedure
 
-<!-- This relates heavily to the Technical Specifications. Content here should link to that section when it is relevant to the training procedure. -->
+#### Preprocessing 
 
-#### Preprocessing [optional]
+The preprocessing step can be found in `prepare.py` file. It consists on loading data from Parquet files, cropping all the images to 228x228 resolution splitting it into training, validation, and test sets, and saving the data and corresponding images to specified directories. Configuration parameters are loaded from a YAML file to control the data splitting process. Finally, images are saved in separate folders for each dataset split (train, valid, test).
 
-{{ preprocessing | default("[More Information Needed]", true)}}
+#### Training overview
 
+The training step can be found in `train.py` file. It performs a fine tunning on the Vision Transformer model, doing a hyperparameter search on various parameters. When the training has finished the hyperparameter search, the model is saved as a pickle file for future use.
 
 #### Training Hyperparameters
 
-- **Training regime:** {{ training_regime | default("[More Information Needed]", true)}} <!--fp32, fp16 mixed precision, bf16 mixed precision, bf16 non-mixed precision, fp16 non-mixed precision, fp8 mixed precision -->
+The training hyperparameters tested can be found in the following file (https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/params.yaml).
 
-#### Speeds, Sizes, Times [optional]
-
-<!-- This section provides information about throughput, start/end time, checkpoint size if relevant, etc. -->
-
-{{ speeds_sizes_times | default("[More Information Needed]", true)}}
+The following values were the best hyperparameters found during the training phase:
+      - `batch size = 16`
+      - `learning rate = 5e-05`
+      - `num epochs = 8`
+      - `weight decay = 0.0`
+      - `optimizer = adam`
 
 ## Evaluation
 
-<!-- This section describes the evaluation protocols and provides the results. -->
+In order to find the best hyperparameter, a validation set is used for getting the accuracy values for each combination, on images that the model has not seen during the training phase. 
 
 ### Testing Data, Factors & Metrics
 
 #### Testing Data
 
-<!-- This should link to a Dataset Card if possible. -->
-
-{{ testing_data | default("[More Information Needed]", true)}}
+The testing data consists of a separate set of images not used during training or validation, obtained from the Cats vs. Dogs dataset. The dataset is split into a small subset of test images, with an equal distribution of cat and dog images to ensure balanced evaluation. The images are preprocessed to match the model's input requirements (224x224 resolution).
 
 #### Factors
 
-<!-- These are the things the evaluation is disaggregating by, e.g., subpopulations or domains. -->
+The evaluation is disaggregated by:
 
-{{ testing_factors | default("[More Information Needed]", true)}}
+- Class Labels: Cats and Dogs.
+- Image Quality: Variations in lighting, background, and image resolution to assess how these factors affect classification accuracy.
+- Model Variants: Comparisons between different fine-tuned versions of the Vision Transformer based on hyperparameter settings.
 
 #### Metrics
 
-<!-- These are the evaluation metrics being used, ideally with a description of why. -->
-
-{{ testing_metrics | default("[More Information Needed]", true)}}
+As there is no specific requirements on any class higher recognition. `accuracy` is used as the primary metric to evaluate the model
 
 ### Results
 
-{{ results | default("[More Information Needed]", true)}}
+The accuracy score achieved during the evaluation was `-`, reflecting the model's performance in classifying images of dogs and cats.
 
 #### Summary
 
-{{ results_summary | default("", true) }}
-
-## Model Examination [optional]
-
-<!-- Relevant interpretability work for the model goes here -->
-
-{{ model_examination | default("[More Information Needed]", true)}}
+As the preprocessing and training steps were correctly done with balanced data, the accuracy achieved reflects the correctness of the model on classifying images of dogs or cats.
 
 ## Environmental Impact
 
-<!-- Total emissions (in grams of CO2eq) and additional considerations, such as electricity usage, go here. Edit the suggested text below accordingly -->
+To be measured and completed in the future.
 
 Carbon emissions can be estimated using the [Machine Learning Impact calculator](https://mlco2.github.io/impact#compute) presented in [Lacoste et al. (2019)](https://arxiv.org/abs/1910.09700).
 
@@ -144,23 +136,23 @@ Carbon emissions can be estimated using the [Machine Learning Impact calculator]
 - **Compute Region:** {{ cloud_region | default("[More Information Needed]", true)}}
 - **Carbon Emitted:** {{ co2_emitted | default("[More Information Needed]", true)}}
 
-## Technical Specifications [optional]
+## Technical Specifications
 
 ### Model Architecture and Objective
 
-{{ model_specs | default("[More Information Needed]", true)}}
+Vision Transformer fine-tunned.
 
 ### Compute Infrastructure
 
-{{ compute_infrastructure | default("[More Information Needed]", true)}}
-
 #### Hardware
 
-{{ hardware_requirements | default("[More Information Needed]", true)}}
+- **GPU or CPU**: Can be trained using any CPU or GPU
+- **RAM**: 4GB or more recommended for faster training
+- **Storage**: Sufficient local or cloud storage required to handle the dataset and model files
 
 #### Software
 
-{{ software | default("[More Information Needed]", true)}}
+Using poetry the correct Python installation can be found (https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/pyproject.toml).
 
 ## Citation [optional]
 
