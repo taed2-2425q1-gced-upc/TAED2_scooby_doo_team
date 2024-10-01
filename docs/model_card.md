@@ -43,15 +43,11 @@ By fine-tunning the model, it learns threats of cat and dog images that allow th
 
 ### Direct Use
 
-<!-- This section is for the model use without fine-tuning or plugging into a larger ecosystem/app. -->
-
-{{ direct_use | default("[More Information Needed]", true)}}
+The model is intended for direct image classification tasks, where an image is fed to the model, and it outputs the prediction—either "cat" or "dog." It can be used for quick and reliable inference in scenarios where images contain only one of the two animals.
 
 ### Downstream Use [optional]
 
-<!-- This section is for the model use when fine-tuned for a task, or when plugged into a larger ecosystem/app -->
-
-{{ downstream_use | default("[More Information Needed]", true)}}
+The model can be adapted for use in various real-world applications, such as sorting or labeling images in pet-related services, or as part of an automated system in animal shelters. Further fine-tuning might be necessary for tasks that involve a broader range of animals or specific use cases like image captioning.
 
 
 ## Bias, Risks, and Limitations
