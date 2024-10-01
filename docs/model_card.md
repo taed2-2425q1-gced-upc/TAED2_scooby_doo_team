@@ -88,11 +88,16 @@ The training step can be found in `train.py` file. It performs a fine tunning on
 The training hyperparameters tested can be found in the following file (https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/params.yaml).
 
 The following values were the best hyperparameters found during the training phase:
-      - `batch size = 16`
-      - `learning rate = 5e-05`
-      - `num epochs = 8`
-      - `weight decay = 0.0`
-      - `optimizer = adam`
+     
+- `batch size = 16`
+      
+- `learning rate = 5e-05`
+      
+- `num epochs = 8`
+      
+- `weight decay = 0.0`
+      
+- `optimizer = adam`
 
 ## Evaluation
 
