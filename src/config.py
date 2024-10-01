@@ -13,6 +13,7 @@ logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 PREPROCESSING = 0
 TRAINING = 1
 TRACKING_MLFLOW = "https://dagshub.com/PabloGete/TAED2_scooby_doo_team.mlflow"
+EXPERIMENT_NAME = "V1_Initial__"
 
 DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"

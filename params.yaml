@@ -4,13 +4,13 @@ prepare:
   valid_size: 0.7
   random_state: 2024
 train:
-  combinations: 5
+  combinations: 1
   targets: ["cat","dog"]
   hyperparameters:
     algorithm: ["VisualTransformer"]
     model_name: ["google/vit-base-patch16-224"]
     batch_size: [8, 16, 32]                 
     learning_rate: [0.00001, 0.00005, 0.0001]    
-    num_epochs: [3,5,7]                 
+    num_epochs: [1]                 
     weight_decay: [0.0, 0.01, 0.1]                                   
     optimizer: ["adam", "sdg"]

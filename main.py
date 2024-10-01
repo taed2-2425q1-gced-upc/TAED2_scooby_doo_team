@@ -3,6 +3,7 @@ import os
 import sys
 
 from src.features_data.prepare import main_preprocessing
+from src.modeling.test import main_test
 from src.modeling.evaluate import main_validation
 from src.modeling.train import main_train
 from src.config import PREPROCESSING,TRAINING,MODELS_DIR
@@ -23,16 +24,12 @@ def main():
             sys.exit()
     else: 
         print("Starting training...")
-        parameters_dict, metrics_dict= main_train()
+        parameters_dict, run_ids= main_train()
         print("Starting validation...")
-        main_validation(parameters_dict,metrics_dict)
-
-    #main_test()
-    
-
-
+        main_validation(parameters_dict,run_ids)
     
     print("Starting testing...")
+    main_test()
 
 if __name__ == "__main__":
     main()

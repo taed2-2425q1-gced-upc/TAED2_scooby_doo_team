@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.utils.data as data
 from typing import Any
 
-from src.config import METRICS_DIR, PROCESSED_DATA_DIR, PROCESSED_VALID_IMAGES, TRACKING_MLFLOW
+from src.config import METRICS_DIR, PROCESSED_DATA_DIR, PROCESSED_VALID_IMAGES, TRACKING_MLFLOW,EXPERIMENT_NAME
 
 # Path to the models folder
 MODELS_FOLDER_PATH = Path("models")
@@ -80,7 +80,7 @@ def evaluate_model(model,batch_size: int) -> float:
 
 
 
-def main_validation(parameters_run: dict[str, Any],metrics_train: dict[str, Any]) -> None:
+def main_validation(parameters_run: dict[str, Any],run_ids: dict[str, Any]) -> None:
     """
     Main function for the validation process
     """
@@ -90,42 +90,37 @@ def main_validation(parameters_run: dict[str, Any],metrics_train: dict[str, Any]
     
     #Set mlflow
     mlflow.set_tracking_uri(TRACKING_MLFLOW)
-    experiment_name = "V7"
-    try:
-        mlflow.set_experiment(experiment_name)
-    except mlflow.exceptions.MlflowException as e:
-        mlflow.create_experiment(experiment_name)
-        mlflow.set_experiment(experiment_name)
-    
+    mlflow.set_experiment(EXPERIMENT_NAME)
+
     best_model = None
     best_accuracy = 0
 
     #Validation for each model
     for combination in parameters_run:
-        run_name = combination + ".pkl"
-        combination_params = parameters_run[combination]
-        with mlflow.start_run(run_name=combination) as run:
+        run_id = run_ids[combination]
+        with mlflow.start_run(run_id=run_id) as run:
+            run_name = combination + ".pkl"
+            combination_params = parameters_run[combination]
+
             with open(MODELS_FOLDER_PATH / run_name, "rb") as pickled_model:
                 model = pickle.load(pickled_model)
 
             accuracy = evaluate_model(model,combination_params["batch_size"])
-            train_loss_run = metrics_train[combination]
-            #Log the loss of the training
-            for i in range(len(train_loss_run)):
-                mlflow.log_metric("Train_loss", train_loss_run[i], step=i+1)
 
             metrics_dict = {"Accuracy": accuracy}
-            mlflow.log_params(combination_params)
             mlflow.log_metrics(metrics_dict)
-    
+
+        #To select the best model we focus on the accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_model = combination
             best_run_id = run.info.run_id
+
     #Add the best model tag to the mlflow
     with mlflow.start_run(run_id=best_run_id):  
             mlflow.set_tag("Best_model", "True")
-    #Save the metric of the best model
+
+    #Save the metric of the best model in a json file
     metrics_dict = {"Run_name":best_model,"Accuracy": best_accuracy}
     with open(metrics_folder_path / "scores.json", "w") as scores_file:
         json.dump(
