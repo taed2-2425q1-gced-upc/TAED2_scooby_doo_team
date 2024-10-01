@@ -10,12 +10,12 @@ load_dotenv()
 PROJ_ROOT = Path(__file__).resolve().parents[1]
 logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
-<<<<<<< HEAD
+
 DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
-=======
+
 PREPROCESSING = 0
 TRAINING = 1
 TRACKING_MLFLOW = "https://dagshub.com/PabloGete/TAED2_scooby_doo_team.mlflow"
@@ -29,7 +29,6 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 PROCESSED_TRAIN_IMAGES = PROCESSED_DATA_DIR / "train_images"
 PROCESSED_VALID_IMAGES = PROCESSED_DATA_DIR / "valid_images"
 PROCESSED_TEST_IMAGES = PROCESSED_DATA_DIR / "test_images"
->>>>>>> train-mlflow
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
 
 MODELS_DIR = PROJ_ROOT / "models"

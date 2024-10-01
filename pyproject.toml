@@ -12,15 +12,13 @@ pandas = "^2.2.2"
 numpy = "^2.1.1"
 scikit-learn = "^1.5.2"
 mlflow = "^2.16.2"
-<<<<<<< HEAD
-=======
+
 transformers = "^4.45.1"
 torch = "^2.4.1"
 python-dotenv = "^1.0.1"
 loguru = "^0.7.2"
 torchvision = "^0.19.1"
 codecarbon = "2.6.0"
->>>>>>> train-mlflow
 
 
 [tool.poetry.group.dev.dependencies]
