@@ -64,12 +64,9 @@ def get_best_model():
 
     best_run = runs_df.loc[runs_df["Accuracy"].idxmax()]
     batch_size = int(best_run["batch_size"])
+    run_name = best_run["name_model"]
 
-    best_run_id = best_run["run_id"]
-    model_uri = f"runs:/{best_run_id}/models"  # Ruta del modelo en MLflow
-    model = mlflow.pytorch.load_model(model_uri)
-
-    return model, batch_size
+    return run_name, batch_size
 
 
 def test_model(model,batch_size: int) -> float:
@@ -107,7 +104,10 @@ def main_test():
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     #Obtain the best run and the batch size of the best model
-    model,batch_size = get_best_model()
+    run_name,batch_size = get_best_model()
+
+    with open(MODELS_DIR / f"{run_name}.pkl", "rb") as f:
+        model = pickle.load(f)
 
     #Test del modelo
     accuracy = test_model(model,batch_size)

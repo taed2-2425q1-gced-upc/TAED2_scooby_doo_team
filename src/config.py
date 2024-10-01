@@ -16,7 +16,7 @@ RAW_DATA_DIR = DATA_DIR / "raw"
 INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 
-PREPROCESSING = 0
+PREPROCESSING = 1
 TRAINING = 1
 TRACKING_MLFLOW = "https://dagshub.com/PabloGete/TAED2_scooby_doo_team.mlflow"
 EXPERIMENT_NAME = "V1_Initial__"

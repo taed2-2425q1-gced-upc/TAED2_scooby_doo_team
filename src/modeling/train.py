@@ -207,14 +207,10 @@ def main_train():
     parameters_dict = {}
     run_ids = {}
 
-    for combination in hyperparameter_combinations:
+    for i,combination in enumerate(hyperparameter_combinations):
         parameters_run = dict(zip(hyperparameter_names,combination))
 
-         #Name of the model: algorithm_day_month_year_min
-        now = datetime.now()
-        run_id = f"day_{now.strftime('%d')}_month_{now.strftime('%m')}_year_{now.strftime('%Y')}_min_{now.strftime('%M')}"
-        model_name = f"{parameters_run['algorithm']}"
-        final_id = f"{model_name}_{run_id}"
+        final_id = f"Model_{i+1}"
 
         parameters_run["name_model"] = final_id
 
@@ -258,9 +254,6 @@ def main_train():
 
             if combination not in run_ids:
                 run_ids[final_id] = run.info.run_id
-
-            #we save the model to mlflow
-            mlflow.pytorch.log_model(model, "models")
 
             #Save the model
             model_name = final_id + ".pkl"
