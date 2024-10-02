@@ -90,18 +90,17 @@ stages:
         - cat
         - dog
     outs:
-    - path: models/
+    - path: models/Model_1.pkl
       hash: md5
-      md5: 54f9bfb0bb5aee9a13e1be82e7b3e743.dir
+      md5: 2d08f5adbb641f47d79a053b79aa4882
       size: 343297898
-      nfiles: 1
     - path: parameters_list.json
       hash: md5
-      md5: 69fcc8504bdd9ef60d8cec40e165f25e
-      size: 304
+      md5: c5073bb2383e9fffaf1ba09645222bd1
+      size: 303
     - path: parameters_run.json
       hash: md5
-      md5: b7115fe02967bf1fcf935c6e67636834
+      md5: 8d9a41135be861d84f0e971777ff9e51
       size: 55
   evaluate:
     cmd: python -m src.models.evaluate
@@ -114,11 +113,10 @@ stages:
       hash: md5
       md5: 8f313062229d057879262fb4a4c06f8a
       size: 1238
-    - path: models/
+    - path: models/Model_1.pkl
       hash: md5
-      md5: 54f9bfb0bb5aee9a13e1be82e7b3e743.dir
+      md5: 2d08f5adbb641f47d79a053b79aa4882
       size: 343297898
-      nfiles: 1
     - path: src/models/evaluate.py
       hash: md5
       md5: a7e251b9ba68713419a98c617b76e6a4
@@ -126,5 +124,5 @@ stages:
     outs:
     - path: metrics/scores.json
       hash: md5
-      md5: de4da0f0264ee82718d10b5d534b9166
+      md5: fedad77e3d3e37a9547c43b2aeb6c892
       size: 67
