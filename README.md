@@ -27,8 +27,8 @@ Software engineering for ML systems
     |   └── prepare.py    <- Creates the dataset for trainig
     └── modeling          <- Files for model training and evaluation
         ├── evaluate.py   <- Validation of the model
-        ├── test.py       <- Train the model
-        └── train.py      <- Test the model
+        ├── test.py       <- Test the model
+        └── train.py      <- Train the model
 
 ```
 
