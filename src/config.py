@@ -21,6 +21,7 @@ TRAINING = 1
 TRACKING_MLFLOW = "https://dagshub.com/PabloGete/TAED2_scooby_doo_team.mlflow"
 EXPERIMENT_NAME = "Cats_dogs_classification"
 
+
 DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 INTERIM_DATA_DIR = DATA_DIR / "interim"

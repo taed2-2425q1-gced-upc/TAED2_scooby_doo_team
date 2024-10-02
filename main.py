@@ -7,7 +7,11 @@ from src.modeling.test import main_test
 from src.modeling.evaluate import main_validation
 from src.modeling.train import main_train
 <<<<<<< HEAD
+<<<<<<< HEAD
 from src.config import PREPROCESSING,TRAINING,MODELS_DIR,PROJ_ROOT
+=======
+from src.config import PREPROCESSING,TRAINING,MODELS_DIR
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 =======
 from src.config import PREPROCESSING,TRAINING,MODELS_DIR
 >>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
@@ -16,7 +20,10 @@ from src.config import PREPROCESSING,TRAINING,MODELS_DIR
 
 def main():
 <<<<<<< HEAD
+<<<<<<< HEAD
     print(PROJ_ROOT)
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 =======
 >>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 

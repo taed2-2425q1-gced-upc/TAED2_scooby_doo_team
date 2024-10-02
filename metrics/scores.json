@@ -1,4 +1,9 @@
 {
+<<<<<<< HEAD
     "Run_name": "Model_1",
     "Accuracy": 68.29268292682927
+=======
+    "Run_name": "VisualTransformer_day_01_month_10_year_2024_min_42",
+    "Accuracy": 43.65853658536585
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 }
