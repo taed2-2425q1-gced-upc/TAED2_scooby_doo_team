@@ -271,3 +271,5 @@ with open("parameters_list.json", "w") as parameters_file:
 
 with open("parameters_run.json", "w") as run_ids_file:
     json.dump(run_ids, run_ids_file, indent=4)
+    
+print("Training finished")
