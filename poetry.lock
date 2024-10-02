@@ -34,6 +34,11 @@ files = [
 dev = ["black", "coverage", "isort", "pre-commit", "pyenchant", "pylint"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "arrow"
 version = "1.3.0"
 description = "Better dates & times for Python"
@@ -53,6 +58,10 @@ doc = ["doc8", "sphinx (>=7.0.0)", "sphinx-autobuild", "sphinx-autodoc-typehints
 test = ["dateparser (==1.*)", "pre-commit", "pytest", "pytest-cov", "pytest-mock", "pytz (==2021.1)", "simplejson (==3.*)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "astroid"
 version = "3.2.4"
 description = "An abstract syntax tree for Python with inference support."
@@ -270,6 +279,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "codecarbon"
 version = "2.6.0"
 description = ""
@@ -298,6 +312,10 @@ typer = "*"
 viz = ["dash", "dash-bootstrap-components (<1.0.0)", "fire"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -495,6 +513,11 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "filelock"
 version = "3.16.1"
 description = "A platform independent file lock."
@@ -511,6 +534,10 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.6.1)", "diff-cover (>=9.2)", "p
 typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "flask"
 version = "3.0.3"
 description = "A simple framework for building complex web applications."
@@ -604,6 +631,11 @@ unicode = ["unicodedata2 (>=15.1.0)"]
 woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "fsspec"
 version = "2024.9.0"
 description = "File-system specification"
@@ -643,6 +675,10 @@ test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "cloudpickle", "dask", "d
 tqdm = ["tqdm"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "gitdb"
 version = "4.0.11"
 description = "Git Object Database"
@@ -850,6 +886,11 @@ testing = ["coverage", "eventlet", "gevent", "pytest", "pytest-cov"]
 tornado = ["tornado (>=0.2)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "huggingface-hub"
 version = "0.25.1"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -884,6 +925,10 @@ torch = ["safetensors[torch]", "torch"]
 typing = ["types-PyYAML", "types-requests", "types-simplejson", "types-toml", "types-tqdm", "types-urllib3", "typing-extensions (>=4.8.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "idna"
 version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -1108,6 +1153,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "loguru"
 version = "0.7.2"
 description = "Python logging made (stupidly) simple"
@@ -1126,6 +1176,10 @@ win32-setctime = {version = ">=1.0.0", markers = "sys_platform == \"win32\""}
 dev = ["Sphinx (==7.2.5)", "colorama (==0.4.5)", "colorama (==0.4.6)", "exceptiongroup (==1.1.3)", "freezegun (==1.1.0)", "freezegun (==1.2.2)", "mypy (==v0.910)", "mypy (==v0.971)", "mypy (==v1.4.1)", "mypy (==v1.5.1)", "pre-commit (==3.4.0)", "pytest (==6.1.2)", "pytest (==7.4.0)", "pytest-cov (==2.12.1)", "pytest-cov (==4.1.0)", "pytest-mypy-plugins (==1.9.3)", "pytest-mypy-plugins (==3.0.0)", "sphinx-autobuild (==2021.3.14)", "sphinx-rtd-theme (==1.3.0)", "tox (==3.27.1)", "tox (==4.11.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "mako"
 version = "1.3.5"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
@@ -1160,6 +1214,11 @@ docs = ["mdx-gh-links (>=0.2)", "mkdocs (>=1.5)", "mkdocs-gen-files", "mkdocs-li
 testing = ["coverage", "pyyaml"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -1184,6 +1243,10 @@ rtd = ["jupyter_sphinx", "mdit-py-plugins", "myst-parser", "pyyaml", "sphinx", "
 testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "markupsafe"
 version = "2.1.5"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1327,6 +1390,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "mdurl"
 version = "0.1.2"
 description = "Markdown URL utilities"
@@ -1338,6 +1406,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "mlflow"
 version = "2.16.2"
 description = "MLflow is an open source platform for the complete machine learning lifecycle"
@@ -1418,6 +1490,11 @@ sqlserver = ["mlflow-dbstore"]
 xethub = ["mlflow-xethub"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "mpmath"
 version = "1.3.0"
 description = "Python library for arbitrary-precision floating-point arithmetic"
@@ -1435,6 +1512,10 @@ gmpy = ["gmpy2 (>=2.1.0a4)"]
 tests = ["pytest (>=4.6)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "mypy-extensions"
 version = "1.0.0"
 description = "Type system extensions for programs checked with the mypy type checker."
@@ -1446,6 +1527,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "networkx"
 version = "3.3"
 description = "Python package for creating and manipulating graphs and networks"
@@ -1464,6 +1550,10 @@ extra = ["lxml (>=4.6)", "pydot (>=2.0)", "pygraphviz (>=1.12)", "sympy (>=1.10)
 test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "numpy"
 version = "2.1.1"
 description = "Fundamental package for array computing in Python"
@@ -1526,6 +1616,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "nvidia-cublas-cu12"
 version = "12.1.3.1"
 description = "CUBLAS native runtime libraries"
@@ -1670,6 +1765,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "opentelemetry-api"
 version = "1.16.0"
 description = "OpenTelemetry Python API"
@@ -1935,6 +2034,11 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "prometheus-client"
 version = "0.21.0"
 description = "Python client for the Prometheus monitoring system."
@@ -1963,6 +2067,10 @@ files = [
 wcwidth = "*"
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "protobuf"
 version = "5.28.2"
 description = ""
@@ -1983,6 +2091,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "psutil"
 version = "6.0.0"
 description = "Cross-platform lib for process and system monitoring in Python."
@@ -2023,6 +2136,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pyarrow"
 version = "17.0.0"
 description = "Python library for Apache Arrow"
@@ -2099,6 +2216,11 @@ files = [
 pyasn1 = ">=0.4.6,<0.7.0"
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pygments"
 version = "2.18.0"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -2113,6 +2235,10 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pylint"
 version = "3.2.7"
 description = "python code static checker"
@@ -2141,6 +2267,11 @@ spelling = ["pyenchant (>=3.2,<4.0)"]
 testutils = ["gitpython (>3)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pynvml"
 version = "11.5.3"
 description = "Python utilities for the NVIDIA Management Library"
@@ -2152,6 +2283,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pyparsing"
 version = "3.1.4"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -2202,6 +2337,11 @@ files = [
 six = ">=1.5"
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "python-dotenv"
 version = "1.0.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -2216,6 +2356,10 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "pytz"
 version = "2024.2"
 description = "World timezone definitions, modern and historical"
@@ -2312,6 +2456,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "questionary"
 version = "2.0.1"
 description = "Python library to build pretty command line user prompts ⭐️"
@@ -2529,6 +2678,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "requests"
 version = "2.32.3"
 description = "Python HTTP for Humans."
@@ -2550,6 +2703,11 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "rich"
 version = "13.8.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -2568,6 +2726,10 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "rsa"
 version = "4.9"
 description = "Pure-Python RSA implementation"
@@ -2582,6 +2744,11 @@ files = [
 pyasn1 = ">=0.1.3"
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "safetensors"
 version = "0.4.5"
 description = ""
@@ -2714,6 +2881,10 @@ testing = ["h5py (>=3.7.0)", "huggingface-hub (>=0.12.1)", "hypothesis (>=6.70.2
 torch = ["safetensors[numpy]", "torch (>=1.10)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "scikit-learn"
 version = "1.5.2"
 description = "A set of python modules for machine learning and data mining"
@@ -2829,6 +3000,11 @@ test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=
 type = ["importlib-metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (==1.11.*)", "pytest-mypy"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "shellingham"
 version = "1.5.4"
 description = "Tool to Detect Surrounding Shell"
@@ -2840,6 +3016,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -2964,6 +3144,11 @@ dev = ["build", "hatch"]
 doc = ["sphinx"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "sympy"
 version = "1.13.3"
 description = "Computer algebra system (CAS) in Python"
@@ -2981,6 +3166,10 @@ mpmath = ">=1.1.0,<1.4"
 dev = ["hypothesis (>=6.70.0)", "pytest (>=7.1.0)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "threadpoolctl"
 version = "3.5.0"
 description = "threadpoolctl"
@@ -2992,6 +3181,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "tokenizers"
 version = "0.20.0"
 description = ""
@@ -3109,6 +3303,10 @@ docs = ["setuptools-rust", "sphinx", "sphinx-rtd-theme"]
 testing = ["black (==22.3)", "datasets", "numpy", "pytest", "requests", "ruff"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -3131,6 +3329,11 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "torch"
 version = "2.4.1"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
@@ -3362,6 +3565,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -3416,6 +3623,11 @@ docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-themes (>=1.0.9)"]
 testing = ["coverage (>=5.0)", "pytest", "pytest-cov"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "wcwidth"
 version = "0.2.13"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -3427,6 +3639,10 @@ files = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "werkzeug"
 version = "3.0.4"
 description = "The comprehensive WSGI web application library."
@@ -3444,6 +3660,11 @@ MarkupSafe = ">=2.1.1"
 watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "win32-setctime"
 version = "1.1.0"
 description = "A small Python utility to set file creation time on Windows"
@@ -3458,6 +3679,10 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
+<<<<<<< HEAD
+=======
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
 name = "wrapt"
 version = "1.16.0"
 description = "Module for decorators, wrappers and monkey patching."
@@ -3558,4 +3783,12 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
+<<<<<<< HEAD
 content-hash = "c423f11b096121f255e0e2a693b21b180540d55c
+=======
+<<<<<<< HEAD
+content-hash = "45d759b648f948ce98a2a4210b3026041eff010924911339d6a99a5b199add23"
+=======
+content-hash = "c423f11b096121f255e0e2a693b21b180540d55c33e5b7fd9dc239c63283448c"
+>>>>>>> train-mlflow
+>>>>>>> 63434e005eb1c3a27bcd639d601a33dc3d5366d1
