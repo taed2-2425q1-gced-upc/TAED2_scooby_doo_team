@@ -1,0 +1,124 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m src.features.prepare
+    deps:
+    - path: data/raw/train-00000-of-00002.parquet
+      hash: md5
+      md5: 50f0afaaab76f975e0c5d86caf7ed7c6
+      size: 330245704
+    - path: data/raw/train-00001-of-00002.parquet
+      hash: md5
+      md5: 033ad71bf3c8fea87b9d7966b753bbc5
+      size: 391396716
+    - path: src/features/prepare.py
+      hash: md5
+      md5: 2baf244afe6fdcb6b612552ea00ce01e
+      size: 3945
+    params:
+      params.yaml:
+        prepare.random_state: 2024
+        prepare.test_size: 0.025
+        prepare.train_size: 0.01
+        prepare.valid_size: 0.7
+    outs:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 003a1ef7ef880d386dabb28dfbfbd18b
+      size: 16708575
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: b54665a180890d168d9b8c92c79d27ee
+      size: 20416511
+    - path: data/processed/X_valid.csv
+      hash: md5
+      md5: 70a2f94aa7e52aaaf40290a17add4abc
+      size: 36312754
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 8700c728a65db3c9169d81a674575149
+      size: 536
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: 2d8c939852267aa6b2d7698ea7c869d4
+      size: 710
+    - path: data/processed/y_valid.csv
+      hash: md5
+      md5: 8f313062229d057879262fb4a4c06f8a
+      size: 1238
+  train:
+    cmd: python -m src.models.train
+    deps:
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: b54665a180890d168d9b8c92c79d27ee
+      size: 20416511
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: 2d8c939852267aa6b2d7698ea7c869d4
+      size: 710
+    - path: src/models/train.py
+      hash: md5
+      md5: c308f051a3d7065b85880d740ce77983
+      size: 8836
+    params:
+      params.yaml:
+        train.combinations: 6
+        train.hyperparameters:
+          algorithm:
+          - VisualTransformer
+          model_name:
+          - google/vit-base-patch16-224
+          batch_size:
+          - 8
+          - 16
+          - 32
+          learning_rate:
+          - 1e-05
+          - 5e-05
+          - 0.0001
+          num_epochs:
+          - 3
+          - 5
+          - 7
+          weight_decay:
+          - 0.0
+          - 0.01
+          - 0.1
+          optimizer:
+          - adam
+          - sdg
+        train.targets:
+        - cat
+        - dog
+    outs:
+    - path: models/
+      hash: md5
+      md5: 9675ee37d6f83accba2b8348d8d8b337.dir
+      size: 2059789517
+      nfiles: 8
+  evaluate:
+    cmd: python -m src.models.evaluate
+    deps:
+    - path: data/processed/X_valid.csv
+      hash: md5
+      md5: 70a2f94aa7e52aaaf40290a17add4abc
+      size: 36312754
+    - path: data/processed/y_valid.csv
+      hash: md5
+      md5: 8f313062229d057879262fb4a4c06f8a
+      size: 1238
+    - path: models/
+      hash: md5
+      md5: 9675ee37d6f83accba2b8348d8d8b337.dir
+      size: 2059789517
+      nfiles: 8
+    - path: src/models/evaluate.py
+      hash: md5
+      md5: 3559d3ef01d4b139ccc0191da9465628
+      size: 4117
+    outs:
+    - path: metrics/scores.json
+      hash: md5
+      md5: 03b00b26672c83656d0fa05240573c12
+      size: 67

@@ -14,6 +14,7 @@ import numpy as np
 import mlflow
 import os
 from datetime import datetime
+import json
 
 from pathlib import Path
 from transformers import ViTForImageClassification
@@ -176,6 +177,9 @@ def train(parameters_run: dict[str, Any], model: Any, optimizer: Any, device: An
 
 
 
+
+
+
 """
 Main function for the training process
 """
@@ -260,4 +264,10 @@ for i,combination in enumerate(hyperparameter_combinations):
             pickle.dump(model, pickle_file)
 
 os.remove(emissions_output_folder / "emissions.csv")
-return parameters_dict,run_ids
+
+#Guarda parameters_list y run_ids en un json en la carpeta models
+with open(MODELS_DIR / "parameters_list.json", "w") as parameters_file:
+    json.dump(parameters_dict, parameters_file, indent=4)
+
+with open(MODELS_DIR / "parameters_run.json", "w") as run_ids_file:
+    json.dump(run_ids, run_ids_file, indent=4)
