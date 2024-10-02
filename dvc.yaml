@@ -29,6 +29,8 @@ stages:
     - train.targets
     outs:
     - models/
+    - parameters_list.json
+    - parameters_run.json
   evaluate:
     cmd: python -m src.models.evaluate
     deps:

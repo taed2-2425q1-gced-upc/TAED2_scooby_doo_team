@@ -266,8 +266,8 @@ for i,combination in enumerate(hyperparameter_combinations):
 os.remove(emissions_output_folder / "emissions.csv")
 
 #Guarda parameters_list y run_ids en un json en la carpeta models
-with open(MODELS_DIR / "parameters_list.json", "w") as parameters_file:
+with open("parameters_list.json", "w") as parameters_file:
     json.dump(parameters_dict, parameters_file, indent=4)
 
-with open(MODELS_DIR / "parameters_run.json", "w") as run_ids_file:
+with open("parameters_run.json", "w") as run_ids_file:
     json.dump(run_ids, run_ids_file, indent=4)

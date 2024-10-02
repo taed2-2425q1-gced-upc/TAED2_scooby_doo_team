@@ -87,10 +87,10 @@ def evaluate_model(model,batch_size: int) -> float:
 Main function for the validation process
 """
 #Load the parameters and run_ids from training script
-with open(MODELS_FOLDER_PATH / "parameters_list.json", "r") as parameters_run_file:
+with open("parameters_list.json", "r") as parameters_run_file:
     parameters_run = json.load(parameters_run_file)
 
-with open(MODELS_FOLDER_PATH / "parameters_run.json", "r") as run_ids_file:
+with open("parameters_run.json", "r") as run_ids_file:
     run_ids = json.load(run_ids_file)
 
 Path("metrics").mkdir(exist_ok=True)
