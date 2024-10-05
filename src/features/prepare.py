@@ -77,6 +77,7 @@ def save_images(dataframe, prepared_images_path, prefix):
 def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path,prepared_train_images_path, prepared_valid_images_path, prepared_test_images_path):
     """Guarda los conjuntos de datos en archivos CSV."""
     Path(prepared_folder_path).mkdir(exist_ok=True)
+    print('hola')
 
     X_train.to_csv(prepared_folder_path / "X_train.csv", index=False)
     y_train.to_csv(prepared_folder_path / "y_train.csv", index=False)

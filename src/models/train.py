@@ -68,7 +68,7 @@ def get_model(algorithm: str, model_name: str, targets: list[str]) -> Any:
 
 
 
-def get_optimizer(algorithm: str, learning_rate: float, model: Any) -> Any:
+def get_optimizer(algorithm: str, learning_rate: float,weight_decay:float,momentum:float, model: Any) -> Any:
     """
     Creates and returns an optimizer for the given model based on the specified algorithm
     """
@@ -76,7 +76,7 @@ def get_optimizer(algorithm: str, learning_rate: float, model: Any) -> Any:
     if algorithm == 'adam':
         return torch.optim.Adam(model.parameters(), lr=learning_rate)
     elif algorithm == 'sdg':
-        return torch.optim.SGD(model.parameters(), lr=learning_rate)
+        return torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay,momentum=momentum)
     
 
 
@@ -136,7 +136,7 @@ def prepare_training_objects(targets,parameters_run: dict[str,Any]):
     """
 
     model = get_model(parameters_run['algorithm'],parameters_run['model_name'],targets)
-    optimizer = get_optimizer(parameters_run['optimizer'],parameters_run['learning_rate'], model)
+    optimizer = get_optimizer(parameters_run['optimizer'],parameters_run['learning_rate'],parameters_run['weight_decay'],parameters_run['momentum'], model)
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loss_function = nn.CrossEntropyLoss()
 
@@ -196,7 +196,7 @@ targets = parameters['targets']
 Path("models").mkdir(exist_ok=True)
 Path(emissions_output_folder).mkdir(parents=True, exist_ok=True)
 
-#logging.getLogger("codecarbon").disabled = True
+logging.getLogger("codecarbon").disabled = True
 
 
 #Set mlflow
@@ -219,7 +219,11 @@ for i,combination in enumerate(hyperparameter_combinations):
 
     with mlflow.start_run(run_name=final_id) as run:
         mlflow.log_params(parameters_run)
-
+        
+        if parameters_run["optimizer"] == "adam":
+            parameters_run["momentum"] = 0
+            parameters_run["weight_decay"] = 0
+            
         model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
 
         #We are going to use the EmissionsTracker to track the emissions

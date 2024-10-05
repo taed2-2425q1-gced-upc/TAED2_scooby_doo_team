@@ -13,8 +13,8 @@ stages:
       size: 391396716
     - path: src/features/prepare.py
       hash: md5
-      md5: 2baf244afe6fdcb6b612552ea00ce01e
-      size: 3945
+      md5: 8329f3d4007cf0dc2769466f116cc62d
+      size: 3964
     params:
       params.yaml:
         prepare.random_state: 2024
@@ -59,8 +59,8 @@ stages:
       size: 710
     - path: src/models/train.py
       hash: md5
-      md5: dbab3ee33fa53ed1d1b8484a947e62e5
-      size: 8844
+      md5: 19f7f9a88b97c4a984a331e6a39e5caa
+      size: 9145
     params:
       params.yaml:
         train.combinations: 1
@@ -78,11 +78,15 @@ stages:
           - 5e-05
           - 0.0001
           num_epochs:
-          - 1
+          - 3
           weight_decay:
           - 0.0
           - 0.01
           - 0.1
+          momentum:
+          - 0.9
+          - 0.95
+          - 0.99
           optimizer:
           - adam
           - sdg
@@ -92,16 +96,16 @@ stages:
     outs:
     - path: models/
       hash: md5
-      md5: 9751c63ef67fd5e0ea11ec6aa6dd8660.dir
+      md5: 742239ad3ea342f6b060f0794869bb47.dir
       size: 343297898
       nfiles: 1
     - path: parameters_list.json
       hash: md5
-      md5: 3451da486d14ff5ce8d0eb1e2edc6d01
-      size: 305
+      md5: c815b0513f020bf7d935cfcc58da6758
+      size: 328
     - path: parameters_run.json
       hash: md5
-      md5: d40d78506a91ab173d7d7c7cd31012d7
+      md5: d79cfd1abf44fb1518dfa158b47ef625
       size: 55
   evaluate:
     cmd: python -m src.models.evaluate
@@ -116,15 +120,15 @@ stages:
       size: 1238
     - path: models/
       hash: md5
-      md5: 9751c63ef67fd5e0ea11ec6aa6dd8660.dir
+      md5: 742239ad3ea342f6b060f0794869bb47.dir
       size: 343297898
       nfiles: 1
     - path: src/models/evaluate.py
       hash: md5
-      md5: a7e251b9ba68713419a98c617b76e6a4
-      size: 4075
+      md5: f37a79e2caf465716a45641e380a50f1
+      size: 4129
     outs:
     - path: metrics/scores.json
       hash: md5
-      md5: 4927e52548fdf7c209906c71a7ea62e7
-      size: 67
+      md5: 1e6b819046f54901e28503286cb9adaf
+      size: 89

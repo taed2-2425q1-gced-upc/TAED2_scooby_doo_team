@@ -66,7 +66,7 @@ def evaluate_model(model,batch_size: int) -> float:
     total = 0
     with torch.no_grad():
         for i, (x, y) in enumerate(valid_dataloader):
-            x = x.to(device)  # Mover los datos de entrada al dispositivo
+            x = x.to(device) 
             y = y.to(device)
             outputs = model(x)
             predicted = torch.argmax(outputs.logits, dim=1)
@@ -129,7 +129,7 @@ with mlflow.start_run(run_id=best_run_id):
         mlflow.set_tag("Best_model", "True")
 
 #Save the metric of the best model in a json file
-metrics_dict = {"Run_name":best_model,"Accuracy": best_accuracy}
+metrics_dict = {"Run_name":best_model,"Accuracy": best_accuracy,"Batch_size":parameters_run[best_model]["batch_size"]}
 with open(metrics_folder_path / "scores.json", "w") as scores_file:
     json.dump(
         metrics_dict,
