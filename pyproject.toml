@@ -19,6 +19,7 @@ python-dotenv = "^1.0.1"
 loguru = "^0.7.2"
 torchvision = "^0.19.1"
 codecarbon = "2.6.0"
+dvc = "^3.55.2"
 
 
 [tool.poetry.group.dev.dependencies]
