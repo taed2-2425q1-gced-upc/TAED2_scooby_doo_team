@@ -171,3 +171,5 @@ cython_debug/
 /parameters_list.json
 /parameters_run.json
 /models
+/out
+Makefile

@@ -60,24 +60,33 @@ def split_data(df, params):
 
 
 
-def save_images(dataframe, prepared_images_path, prefix):
+def save_images(dataframe,labels, prepared_images_path, prefix):
     """
     Saves images from a dataframe to a folder
     """
-    Path(prepared_images_path).mkdir(exist_ok=True)
-    image_index = 0
+    Path(prepared_images_path/"dogs").mkdir(parents=True, exist_ok=True)
+    Path(prepared_images_path/"cats").mkdir(parents=True, exist_ok=True)
+
+    num_cats = 0
+    num_dogs = 0
+    dataframe_index = 0
     for _, row in dataframe.iterrows():
+        label = labels.iloc[dataframe_index]
         img_bytes = row['image']['bytes']
         img = Image.open(io.BytesIO(img_bytes))
-        img.save(prepared_images_path / f"{prefix}_{image_index}.jpg")
-        image_index += 1
+        if label == 0:
+            img.save(prepared_images_path /"cats"/f"{prefix}_{num_cats}.jpg")
+            num_cats += 1
+        else:
+            img.save(prepared_images_path /"dogs"/f"{prefix}_{num_dogs}.jpg")
+            num_dogs += 1
+        dataframe_index += 1
 
 
 
 def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folder_path,prepared_train_images_path, prepared_valid_images_path, prepared_test_images_path):
     """Guarda los conjuntos de datos en archivos CSV."""
     Path(prepared_folder_path).mkdir(exist_ok=True)
-    print('hola')
 
     X_train.to_csv(prepared_folder_path / "X_train.csv", index=False)
     y_train.to_csv(prepared_folder_path / "y_train.csv", index=False)
@@ -87,9 +96,9 @@ def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test, prepared_folde
     y_test.to_csv(prepared_folder_path / "y_test.csv", index=False)
 
 
-    save_images(X_train, prepared_train_images_path, "image_train")
-    save_images(X_valid, prepared_valid_images_path, "image_valid")
-    save_images(X_test, prepared_test_images_path, "image_test")
+    save_images(X_train,y_train,prepared_train_images_path, "image_train")
+    save_images(X_valid,y_valid,prepared_valid_images_path, "image_valid")
+    save_images(X_test,y_test ,prepared_test_images_path, "image_test")
 
     print("Data saved successfully.")
 

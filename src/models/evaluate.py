@@ -35,16 +35,27 @@ def preapare_validation_dataloaders(input_folder_path: Path, input_valid_images_
     We get the validation dataloader
     """
 
-    X_valid = pd.read_csv(input_folder_path / "X_valid.csv")
-    y_valid = pd.read_csv(input_folder_path / "y_valid.csv")
 
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
 
-    validation_images = [transform(load_image(str(input_valid_images_path / f"image_valid_{i}.jpg"))) for i in range(len(X_valid))]
-    valid_dataset = data.TensorDataset(torch.stack(validation_images), torch.tensor(y_valid.values).long())
+    validation_images = []
+    validation_labels = []
+
+    class_folders = [folder for folder in input_valid_images_path.iterdir() if folder.is_dir()]
+    class_to_label = {folder.name: idx for idx, folder in enumerate(class_folders)}
+
+    for class_folder in class_folders:
+        label = class_to_label[class_folder.name]  # Get the label for this class
+        for image_path in class_folder.glob("*.jpg"):
+            image = load_image(str(image_path))
+            image = transform(image)  # Apply the transformations
+            validation_images.append(image)
+            validation_labels.append(label)
+
+    valid_dataset = data.TensorDataset(torch.stack(validation_images), torch.tensor(validation_labels).long())
     valid_dataloader = data.DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
 
     return valid_dataloader

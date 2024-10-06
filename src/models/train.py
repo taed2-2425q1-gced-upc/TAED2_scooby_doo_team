@@ -111,8 +111,6 @@ def preapare_train_dataloaders(input_folder_path,input_train_images_path: Path,b
     We get the training dataloaders
     """
 
-    X_train = pd.read_csv(input_folder_path / "X_train.csv")
-    y_train = pd.read_csv(input_folder_path / "y_train.csv")
 
     #Define the transformations for the images
     transform = transforms.Compose([
@@ -120,8 +118,22 @@ def preapare_train_dataloaders(input_folder_path,input_train_images_path: Path,b
         transforms.ToTensor(),
     ])
 
-    training_images = [transform(load_image(str(input_train_images_path / f"image_train_{i}.jpg"))) for i in range(len(X_train))]
-    train_dataset = data.TensorDataset(torch.stack(training_images), torch.tensor(y_train.values).long())
+    training_images = []
+    training_labels = []
+
+    
+    class_folders = [folder for folder in input_train_images_path.iterdir() if folder.is_dir()]
+    class_to_label = {folder.name: idx for idx, folder in enumerate(class_folders)}
+
+    for class_folder in class_folders:
+        label = class_to_label[class_folder.name]  # Get the label for this class
+        for image_path in class_folder.glob("*.jpg"):
+            image = load_image(str(image_path))
+            image = transform(image)  # Apply the transformations
+            training_images.append(image)
+            training_labels.append(label)
+    
+    train_dataset = data.TensorDataset(torch.stack(training_images), torch.tensor(training_labels).long())
     train_dataloader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     return train_dataloader
@@ -196,7 +208,7 @@ targets = parameters['targets']
 Path("models").mkdir(exist_ok=True)
 Path(emissions_output_folder).mkdir(parents=True, exist_ok=True)
 
-logging.getLogger("codecarbon").disabled = True
+#logging.getLogger("codecarbon").disabled = True
 
 
 #Set mlflow
@@ -226,6 +238,7 @@ for i,combination in enumerate(hyperparameter_combinations):
             
         model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
 
+
         #We are going to use the EmissionsTracker to track the emissions
         tracker = EmissionsTracker(
         project_name=EXPERIMENT_NAME,
@@ -236,6 +249,8 @@ for i,combination in enumerate(hyperparameter_combinations):
         on_csv_write="append",
         default_cpu_power=45,
     )
+
+        #si pasa que hay otra proceso corriendo es porque la version es la 2.6.0
         tracker.start()
         model,loss_per_epoch = train(parameters_run, model, optimizer, device, loss_function)
         tracker.stop()

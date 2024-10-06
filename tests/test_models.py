@@ -31,16 +31,28 @@ def cats_dogs_test_data():
     Returns the test data to be used in the test_best_model function. It is a fixture to be used in the test_best_model function
     """
     def obtain_test_data(input_folder_path, input_test_images_path, batch_size):
-        X_test = pd.read_csv(input_folder_path / "X_test.csv")
-        y_test = pd.read_csv(input_folder_path / "y_test.csv")
 
         transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
         ])
 
-        test_images = [transform(load_image(str(input_test_images_path / f"image_test_{i}.jpg"))) for i in range(len(X_test))]
-        test_dataset = data.TensorDataset(torch.stack(test_images), torch.tensor(y_test.values).long())
+        test_images = []
+        test_labels = []
+
+        class_folders = [folder for folder in input_test_images_path.iterdir() if folder.is_dir()]
+        class_to_label = {folder.name: idx for idx, folder in enumerate(class_folders)}
+
+        for class_folder in class_folders:
+            label = class_to_label[class_folder.name]  # Get the label for this class
+            for image_path in class_folder.glob("*.jpg"):
+                image = load_image(str(image_path))
+                image = transform(image)  # Apply the transformations
+                test_images.append(image)
+                test_labels.append(label)
+
+
+        test_dataset = data.TensorDataset(torch.stack(test_images), torch.tensor(test_labels).long())
         test_dataloader = data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
         return test_dataloader
