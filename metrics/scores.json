@@ -1,5 +1,5 @@
 {
     "Run_name": "Model_1",
-    "Accuracy": 97.3170731707317,
-    "Batch_size": 16
+    "Accuracy": 99.7560975609756,
+    "Batch_size": 32
 }

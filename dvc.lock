@@ -78,7 +78,7 @@ stages:
           - 5e-05
           - 0.0001
           num_epochs:
-          - 3
+          - 1
           weight_decay:
           - 0.0
           - 0.01
@@ -96,16 +96,16 @@ stages:
     outs:
     - path: models/
       hash: md5
-      md5: 742239ad3ea342f6b060f0794869bb47.dir
+      md5: b237e3a37b00c6fd98f0bf7b856d9e70.dir
       size: 343297898
       nfiles: 1
     - path: parameters_list.json
       hash: md5
-      md5: c815b0513f020bf7d935cfcc58da6758
+      md5: 0832c5ae97c353162defb13de6a55f57
       size: 328
     - path: parameters_run.json
       hash: md5
-      md5: d79cfd1abf44fb1518dfa158b47ef625
+      md5: 29f8e9c9e534e4ffad9ad95e51db7f1b
       size: 55
   evaluate:
     cmd: python -m src.models.evaluate
@@ -120,15 +120,15 @@ stages:
       size: 1238
     - path: models/
       hash: md5
-      md5: 742239ad3ea342f6b060f0794869bb47.dir
+      md5: b237e3a37b00c6fd98f0bf7b856d9e70.dir
       size: 343297898
       nfiles: 1
     - path: src/models/evaluate.py
       hash: md5
-      md5: f37a79e2caf465716a45641e380a50f1
-      size: 4129
+      md5: 34b23baa0c61699b5d53192ed608cc15
+      size: 4085
     outs:
     - path: metrics/scores.json
       hash: md5
-      md5: 1e6b819046f54901e28503286cb9adaf
+      md5: 31fc8df204f1b0e488c9a06bf222274a
       size: 89
