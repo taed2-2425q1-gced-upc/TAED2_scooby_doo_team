@@ -13,8 +13,8 @@ stages:
       size: 391396716
     - path: src/features/prepare.py
       hash: md5
-      md5: 6c400fff2b0cfcd8e011c86d6ad9e208
-      size: 4339
+      md5: ed5bbf14e9c3db4a5d534c36e1e5ba61
+      size: 4216
     params:
       params.yaml:
         prepare.random_state: 2024
@@ -24,43 +24,43 @@ stages:
     outs:
     - path: data/processed/X_test.csv
       hash: md5
-      md5: 003a1ef7ef880d386dabb28dfbfbd18b
-      size: 16708575
+      md5: dd99915e0d4a2e023b894785015ee57b
+      size: 16708398
     - path: data/processed/X_train.csv
       hash: md5
-      md5: b54665a180890d168d9b8c92c79d27ee
-      size: 20416511
+      md5: 350cd9648736dbcc09f9a36bedfe78f5
+      size: 20416276
     - path: data/processed/X_valid.csv
       hash: md5
-      md5: 70a2f94aa7e52aaaf40290a17add4abc
-      size: 36312754
+      md5: b776f1d38e2f31a3718424f2ecca15ef
+      size: 36312343
     - path: data/processed/y_test.csv
       hash: md5
-      md5: 8700c728a65db3c9169d81a674575149
-      size: 536
+      md5: 84eb56f8b084f16de8845a0c902a9aea
+      size: 359
     - path: data/processed/y_train.csv
       hash: md5
-      md5: 2d8c939852267aa6b2d7698ea7c869d4
-      size: 710
+      md5: a65f84b1a1c9f8520ac8e7a56548ff11
+      size: 475
     - path: data/processed/y_valid.csv
       hash: md5
-      md5: 8f313062229d057879262fb4a4c06f8a
-      size: 1238
+      md5: 841d28cbfbadc3bfff45f97916f041a0
+      size: 827
   train:
     cmd: python -m src.models.train
     deps:
     - path: data/processed/X_train.csv
       hash: md5
-      md5: b54665a180890d168d9b8c92c79d27ee
-      size: 20416511
+      md5: 350cd9648736dbcc09f9a36bedfe78f5
+      size: 20416276
     - path: data/processed/y_train.csv
       hash: md5
-      md5: 2d8c939852267aa6b2d7698ea7c869d4
-      size: 710
+      md5: a65f84b1a1c9f8520ac8e7a56548ff11
+      size: 475
     - path: src/models/train.py
       hash: md5
-      md5: ab4cfc548e5b8ff6d3d8d4bc85b20371
-      size: 9608
+      md5: 9db6a25d84536515ed5db28a6c8c2018
+      size: 9314
     params:
       params.yaml:
         train.combinations: 2
@@ -96,39 +96,39 @@ stages:
     outs:
     - path: models/
       hash: md5
-      md5: e961c9077f9378db1e29665c32eb6360.dir
-      size: 686595796
+      md5: 6323223c5f25361884fe26a157a33e1d.dir
+      size: 686597396
       nfiles: 2
     - path: parameters_list.json
       hash: md5
-      md5: 8942174f0ed21fb4988657033caef859
-      size: 658
+      md5: 728f57223f88bb68adaae03376e68ea8
+      size: 631
     - path: parameters_run.json
       hash: md5
-      md5: 722ea1ba6878235a39b9f3b50adc4e19
-      size: 107
+      md5: 7d6e06d3396f82458c03202a2bf29c57
+      size: 104
   evaluate:
     cmd: python -m src.models.evaluate
     deps:
     - path: data/processed/X_valid.csv
       hash: md5
-      md5: 70a2f94aa7e52aaaf40290a17add4abc
-      size: 36312754
+      md5: b776f1d38e2f31a3718424f2ecca15ef
+      size: 36312343
     - path: data/processed/y_valid.csv
       hash: md5
-      md5: 8f313062229d057879262fb4a4c06f8a
-      size: 1238
+      md5: 841d28cbfbadc3bfff45f97916f041a0
+      size: 827
     - path: models/
       hash: md5
-      md5: e961c9077f9378db1e29665c32eb6360.dir
-      size: 686595796
+      md5: 6323223c5f25361884fe26a157a33e1d.dir
+      size: 686597396
       nfiles: 2
     - path: src/models/evaluate.py
       hash: md5
-      md5: a5bffbac59d8a9b7796f411afd857c2a
-      size: 4459
+      md5: 46948889c231f8b35789c002aa0bb43b
+      size: 4308
     outs:
     - path: metrics/scores.json
       hash: md5
-      md5: d48db8e04fd8fbe11d0f74a283f52407
-      size: 90
+      md5: e0b52ebf4a4ab17e8efcfccdca26a418
+      size: 85
