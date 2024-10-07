@@ -14,8 +14,10 @@ Software engineering for ML systems
 ├── README.md                         <- The top level README
 ├── pyproject.toml                    <- Defines dependencies of python libraries
 ├── poetry.lock                       <- Defines which versions of python libraries to use
-├── params.yaml                       <- Defines which models to use and which combinations of hyperparameters to train
-├── .*                                <- Other configuration files (such as .gitignore, .dvcignore, etc), not stated for simplicity
+├── params.yaml                       <- Defines which models to use and which combinations of hyperparameters
+│                                        to train
+├── .*                                <- Other configuration files (such as .gitignore, .dvcignore, etc), not
+│                                        stated for simplicity
 ├── data                              <- Folder containing the data to train and validate the model
 │   ├── processed                     <- The final data processed for model use
 │   │   ├── train_images              <- Images used during training
@@ -24,7 +26,8 @@ Software engineering for ML systems
 │   │   ├── valid_images              <- Images used during validation
 │   │   │   ├── cats                  <- Images of cats
 │   │   │   └── dogs                  <- Images of dogs
-│   │   └── *.csv                     <- Files generated during processing of data such as target class of each image
+│   │   └── *.csv                     <- Files generated during processing of data such as target class of
+│   │                                    each image
 │   └── raw                           <- The original, immutable data dump, stored in parquet files
 ├── docs                              <- Documents such as model card or data card
 ├── metrics                           <- Dumps of metrics such as the accuracy of the best model
