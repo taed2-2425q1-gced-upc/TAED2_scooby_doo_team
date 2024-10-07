@@ -4,7 +4,7 @@ prepare:
   valid_size: 0.7
   random_state: 2024
 train:
-  combinations: 1
+  combinations: 2
   targets: ["cat","dog"]
   hyperparameters:
     algorithm: ["VisualTransformer"]
