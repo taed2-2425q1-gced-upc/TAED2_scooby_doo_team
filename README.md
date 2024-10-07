@@ -41,7 +41,7 @@ Software engineering for ML systems
 └── src                               <- Source code for use in this project
     ├── __init__.py                   <- Makes TAED2_scooby_doo_team a Python module
     ├── config.py                     <- Configuration file for python
-    ├── features_data                 <- Files for feature extraction and data processing
+    ├── features                      <- Files for feature extraction and data processing
     │   ├── deepchecks_validation.py  <- Performs data checks and writes a report in reports
     |   └── prepare.py                <- Creates the dataset for trainig
     └── models                        <- Files for model training and evaluation
