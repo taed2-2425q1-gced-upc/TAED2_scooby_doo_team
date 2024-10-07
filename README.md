@@ -13,7 +13,7 @@ Software engineering for ML systems
 
 ├── README.md                         <- The top level README
 ├── pyproject.toml                    <- Defines dependencies of python libraries
-├── poetry.lock                       <- Defines which versions of
+├── poetry.lock                       <- Defines which versions of python libraries use
 ├── params.yaml                       <- Defines which models to use and which combinations of hyperparameters to train
 ├── .*                                <- Other configuration files (such as .gitignore, .dvcignore, etc), not stated for simplicity
 ├── data                              <- Folder containing the data to train and validate the model
