@@ -8,7 +8,6 @@ from typing import Any
 from pathlib import Path
 import pickle
 import json
-import logging
 import random
 import itertools
 import yaml
@@ -16,13 +15,11 @@ import mlflow
 
 import pandas as pd
 import torch
-import torch.nn as nn
-import torch.utils.data as data
-import numpy as np
+from torch import nn
+from torch.utils import data
 
 from PIL import Image
 from torchvision import transforms
-from datetime import datetime
 from transformers import ViTForImageClassification
 from codecarbon import EmissionsTracker
 from src.config import PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES, \
