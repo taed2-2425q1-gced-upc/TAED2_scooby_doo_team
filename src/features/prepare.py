@@ -76,8 +76,8 @@ def save_images(dataframe,labels, prepared_images_path, prefix):
     """
     Saves images from a dataframe to a folder
     """
-    Path(PROCESSED_DATA_DIR/"dogs").mkdir(parents=True, exist_ok=True)
-    Path(PROCESSED_DATA_DIR/"cats").mkdir(parents=True, exist_ok=True)
+    Path(prepared_images_path/"dogs").mkdir(parents=True, exist_ok=True)
+    Path(prepared_images_path/"cats").mkdir(parents=True, exist_ok=True)
 
     num_cats = 0
     num_dogs = 0

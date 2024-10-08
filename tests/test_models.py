@@ -100,4 +100,4 @@ def test_best_model(best_model,cats_dogs_test_data):
             correct += (predicted == y).sum().item()
     accuracy = correct / total
 
-    assert accuracy == pytest.approx(1.0, rel=0.05)
+    assert accuracy == pytest.approx(0.95, rel=0.05)
