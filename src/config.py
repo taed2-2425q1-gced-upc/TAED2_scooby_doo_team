@@ -19,16 +19,17 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 PREPROCESSING = 1
 TRAINING = 1
 TRACKING_MLFLOW = "https://dagshub.com/PabloGete/TAED2_scooby_doo_team.mlflow"
-EXPERIMENT_NAME = "Cats_dogs_classification"
+EXPERIMENT_NAME = "Cats_dogs_classification_V1"
 
 DATA_DIR = PROJ_ROOT / "data"
+TEST_DIR = PROJ_ROOT / "tests"
 RAW_DATA_DIR = DATA_DIR / "raw"
 INTERIM_DATA_DIR = DATA_DIR / "interim"
 METRICS_DIR = PROJ_ROOT / "metrics"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 PROCESSED_TRAIN_IMAGES = PROCESSED_DATA_DIR / "train_images"
 PROCESSED_VALID_IMAGES = PROCESSED_DATA_DIR / "valid_images"
-PROCESSED_TEST_IMAGES = PROCESSED_DATA_DIR / "test_images"
+PROCESSED_TEST_IMAGES = TEST_DIR / "test_data"
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
 
 MODELS_DIR = PROJ_ROOT / "models"

@@ -1,26 +1,29 @@
+'''
+This module takes care of trainig some models, logging several metrics 
+and dumping the models in a compressed format.
+'''
+
+import os
+from typing import Any
+from pathlib import Path
 import pickle
-import torch
+import json
 import random
 import itertools
 import yaml
-import logging
-from PIL import Image
-from torchvision import transforms
+import mlflow
 
 import pandas as pd
-import torch.nn as nn
-import torch.utils.data as data
-import numpy as np
-import mlflow
-import os
-from datetime import datetime
-import json
+import torch
+from torch import nn
+from torch.utils import data
 
-from pathlib import Path
+from PIL import Image
+from torchvision import transforms
 from transformers import ViTForImageClassification
 from codecarbon import EmissionsTracker
-from src.config import PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES,MODELS_DIR,METRICS_DIR,TRACKING_MLFLOW,EXPERIMENT_NAME
-from typing import Any
+from src.config import PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES, \
+    MODELS_DIR,METRICS_DIR,TRACKING_MLFLOW,EXPERIMENT_NAME
 
 
 
@@ -48,7 +51,7 @@ def combine_hyperparameters(values: tuple[tuple[Any]], number_of_combinations: i
 
     combinations = list(itertools.product(*values))
     combinations = random.sample(combinations, number_of_combinations)
-    return combinations 
+    return combinations
 
 
 
@@ -68,7 +71,13 @@ def get_model(algorithm: str, model_name: str, targets: list[str]) -> Any:
 
 
 
-def get_optimizer(algorithm: str, learning_rate: float, model: Any) -> Any:
+def get_optimizer(
+        algorithm: str,
+        learning_rate: float,
+        weight_decay: float,
+        momentum: float,
+        model: Any
+    ) -> Any:
     """
     Creates and returns an optimizer for the given model based on the specified algorithm
     """
@@ -76,19 +85,28 @@ def get_optimizer(algorithm: str, learning_rate: float, model: Any) -> Any:
     if algorithm == 'adam':
         return torch.optim.Adam(model.parameters(), lr=learning_rate)
     elif algorithm == 'sdg':
-        return torch.optim.SGD(model.parameters(), lr=learning_rate)
-    
+        return torch.optim.SGD(
+                model.parameters(),
+                lr=learning_rate,
+                weight_decay=weight_decay,
+                momentum=momentum
+            )
 
 
 
-def prepare_hyperparameters_combinations(parameters: dict[str,Any]) -> tuple[dict[str,Any], list[str]]: 
+def prepare_hyperparameters_combinations(
+        parameters: dict[str,Any]
+    ) -> tuple[dict[str,Any], list[str]]:
     """
     Get the possible combination of hyperparameters and the names of those hyperparameters
-    """   
+    """
 
     hyperparameter_names = parameters["hyperparameters"].keys()
     values = parameters['hyperparameters'].values()
-    hyperparameter_combinations = combine_hyperparameters(values=values, number_of_combinations = parameters['combinations'])
+    hyperparameter_combinations = combine_hyperparameters(
+                                    values=values,
+                                    number_of_combinations = parameters['combinations']
+                                )
 
     return  hyperparameter_combinations, hyperparameter_names
 
@@ -106,13 +124,15 @@ def load_image(image_path: str) -> Any:
 
 
 
-def preapare_train_dataloaders(input_folder_path,input_train_images_path: Path,batch_size: int) -> data.DataLoader:
+def preapare_train_dataloaders(
+        input_folder_path,
+        input_train_images_path: Path,
+        batch_size: int
+    ) -> data.DataLoader:
     """
     We get the training dataloaders
     """
 
-    X_train = pd.read_csv(input_folder_path / "X_train.csv")
-    y_train = pd.read_csv(input_folder_path / "y_train.csv")
 
     #Define the transformations for the images
     transform = transforms.Compose([
@@ -120,9 +140,28 @@ def preapare_train_dataloaders(input_folder_path,input_train_images_path: Path,b
         transforms.ToTensor(),
     ])
 
-    training_images = [transform(load_image(str(input_train_images_path / f"image_train_{i}.jpg"))) for i in range(len(X_train))]
-    train_dataset = data.TensorDataset(torch.stack(training_images), torch.tensor(y_train.values).long())
-    train_dataloader = data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    training_images = []
+    training_labels = []
+
+    class_folders = [folder for folder in input_train_images_path.iterdir() if folder.is_dir()]
+    class_to_label = {folder.name: idx for idx, folder in enumerate(class_folders)}
+
+    for class_folder in class_folders:
+        label = class_to_label[class_folder.name]  # Get the label for this class
+        for image_path in class_folder.glob("*.jpg"):
+            image = load_image(str(image_path))
+            image = transform(image)  # Apply the transformations
+            training_images.append(image)
+            training_labels.append(label)
+
+    train_dataset = data.TensorDataset(
+                        torch.stack(training_images),
+                        torch.tensor(training_labels).long()
+                    )
+    train_dataloader = data.DataLoader(train_dataset,
+                        batch_size=batch_size,
+                        shuffle=True
+                    )
 
     return train_dataloader
 
@@ -136,7 +175,13 @@ def prepare_training_objects(targets,parameters_run: dict[str,Any]):
     """
 
     model = get_model(parameters_run['algorithm'],parameters_run['model_name'],targets)
-    optimizer = get_optimizer(parameters_run['optimizer'],parameters_run['learning_rate'], model)
+    optimizer = get_optimizer(
+                    parameters_run['optimizer'],
+                    parameters_run['learning_rate'],
+                    parameters_run['weight_decay'],
+                    parameters_run['momentum'],
+                    model
+                )
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loss_function = nn.CrossEntropyLoss()
 
@@ -145,37 +190,45 @@ def prepare_training_objects(targets,parameters_run: dict[str,Any]):
 
 
 
-def train(parameters_run: dict[str, Any], model: Any, optimizer: Any, device: Any, loss_function: Any) -> None:
+def train(
+        parameters_run: dict[str, Any],
+        model: Any,
+        optimizer: Any,
+        device: Any,
+        loss_function: Any
+    ) -> None:
     """
     Trains a model for a specified number of epochs.
     """
-    train_dataloader = preapare_train_dataloaders(PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES,parameters_run["batch_size"])
+    train_dataloader = preapare_train_dataloaders(
+                        PROCESSED_DATA_DIR,
+                        PROCESSED_TRAIN_IMAGES,
+                        parameters_run["batch_size"]
+                    )
 
     model.to(device)
     model.train()
     loss_per_step = []
     loss_per_epoch = []
-    for epoch in range(parameters_run["num_epochs"]):   
-        print(f"Epoch {epoch+1}")    
+    for epoch in range(parameters_run["num_epochs"]):
+        print(f"Epoch {epoch+1}")
         total_training_loss = 0
         for step, (x, y) in enumerate(train_dataloader):
             print(f"Step {step+1} and len of batch {len(x)}")
-            optimizer.zero_grad()  
+            optimizer.zero_grad()
             x, y  = x.to(device), y.to(device)
             y = y.squeeze()
             output = model(x).logits
             loss = loss_function(output,y)
-            loss.backward()       
-            optimizer.step() 
+            loss.backward()
+            optimizer.step()
             total_training_loss += loss.item()
             loss_per_step.append(loss.item())
         loss_per_epoch.append(sum(loss_per_step)/len(loss_per_step))
-        print(f"Epoch {epoch+1}/{parameters_run['num_epochs']}, Average Training Loss: {total_training_loss / (step + 1)}") 
+        print(f"Epoch {epoch+1}/{parameters_run['num_epochs']}, \
+             Average Training Loss: {total_training_loss / (step + 1)}")
 
     return model,loss_per_epoch
-        
-
-
 
 
 
@@ -220,7 +273,12 @@ for i,combination in enumerate(hyperparameter_combinations):
     with mlflow.start_run(run_name=final_id) as run:
         mlflow.log_params(parameters_run)
 
+        if parameters_run["optimizer"] == "adam":
+            parameters_run["momentum"] = 0
+            parameters_run["weight_decay"] = 0
+
         model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
+
 
         #We are going to use the EmissionsTracker to track the emissions
         tracker = EmissionsTracker(
@@ -232,6 +290,8 @@ for i,combination in enumerate(hyperparameter_combinations):
         on_csv_write="append",
         default_cpu_power=45,
     )
+
+        #si pasa que hay otra proceso corriendo es porque la version es la 2.6.0
         tracker.start()
         model,loss_per_epoch = train(parameters_run, model, optimizer, device, loss_function)
         tracker.stop()
@@ -271,5 +331,5 @@ with open("parameters_list.json", "w") as parameters_file:
 
 with open("parameters_run.json", "w") as run_ids_file:
     json.dump(run_ids, run_ids_file, indent=4)
-    
+
 print("Training finished")
