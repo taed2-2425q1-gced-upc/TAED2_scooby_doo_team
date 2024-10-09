@@ -17,9 +17,6 @@ stages:
     - data/processed/y_valid.csv
     - data/processed/X_test.csv
     - data/processed/y_test.csv
-    - data/processed/train_images/
-    - data/processed/valid_images/
-    - tests/test_data/
   train:
     cmd: python -m src.models.train
     deps:
