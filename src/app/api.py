@@ -7,6 +7,7 @@ from src.config import MODELS_DIR
 import torch
 import io
 import pickle
+import numpy as np
 
 model = None
 
@@ -27,7 +28,8 @@ async def lifespan(app: FastAPI):
         model_path = models_path[0]
         with open(model_path,"rb") as file:
             model = pickle.load(file)
-        
+        model.eval()
+
         yield
     finally:
         del model
@@ -47,7 +49,7 @@ def image_to_tensor(image_bytes: bytes):
 
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-        return transform(image)
+        return torch.unsqueeze(transform(image),0)
 
 @app.post("/predict")
 async def predict_image(file: UploadFile):
@@ -62,14 +64,19 @@ async def predict_image(file: UploadFile):
         image = image_to_tensor(image_bytes)
         await file.close()
 
-        prediction = model(image)
+        prediction = np.argmax(model(image).logits.detach()[0]).tolist()
+
+        if prediction == 0:
+            prediction = "cat"
+        else: 
+            prediction = "dog"
 
         response = {
             "message":HTTPStatus.OK.phrase,
             "status-code":HTTPStatus.OK,
-            "data":prediction
+            "class":prediction
         }
-        
+
         return response
     except:
         response = {
