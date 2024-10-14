@@ -10,14 +10,17 @@ import torch
 import pytest
 from torchvision import transforms
 from torch.utils import data
+from PIL import Image
 
-from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TRAIN_IMAGES,PROCESSED_TEST_IMAGES
+from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TRAIN_IMAGES,PROCESSED_TEST_IMAGES,PROCESSED_VALID_IMAGES,MODELS_DIR
 from src.models.train import load_params_train
 from src.models.train import combine_hyperparameters
 from src.models.train import get_model, get_optimizer
 from src.models.train import preapare_train_dataloaders
 from src.models.train import training
+from src.models.evaluate import preapare_validation_dataloaders
 from src.models.evaluate import load_image
+from src.models.evaluate import evaluate_model
 
 
 @pytest.fixture
@@ -125,6 +128,16 @@ def mock_train_parameters():
     }
 
 
+@pytest.fixture
+def sample_image(tmp_path):
+    """
+    Returns the path to a sample image
+    """
+    # Crear una imagen temporal para usar en el test
+    img_path = "data/processed/valid_images/dogs/image_valid_0.jpg"
+    return img_path
+
+
 
 #TRAINING SCRIPT TESTS
 
@@ -156,12 +169,12 @@ def test_preapare_train_dataloaders():
     
     batch = next(iter(train_dataloader))
     print(batch[0].shape)
-    assert len(batch) == 2, "DataLoader has not the expected number of elements."
-    assert batch[0].shape[0] == batch_size, "The batch size is not correct."
-    assert batch[0].shape[2] == 224, "The height of the image is not correct."
-    assert batch[0].shape[3] == 224, "The width of the image is not correct."
-    assert batch[0].shape[1] == 3, "The number of channels is not correct."
-
+    assert len(batch) == 2, "DataLoader has not the expected number of elements"
+    assert batch[0].shape[0] == batch_size, "The batch size is not correct"
+    assert batch[0].shape[2] == 224, "The height of the image is not correct"
+    assert batch[0].shape[3] == 224, "The width of the image is not correct"
+    assert batch[0].shape[1] == 3, "The number of channels is not correct"
+    assert len(train_dataloader) > 0, "Dataloader does not have any data"
 
 
 
@@ -208,7 +221,7 @@ def test_get_optimizer():
     assert optimizer.defaults['weight_decay'] == 0.0001, "Weight decay is not correct"
     assert 'momentum' not in optimizer.defaults, "Momentum is not correct"
     #Example of parameters for the optimizer if the optimizer is sgd
-    optimizer = get_optimizer("sdg", 0.001, 0.0001, 0.9, model)
+    optimizer = get_optimizer("sgd", 0.001, 0.0001, 0.9, model)
     assert isinstance(optimizer, torch.optim.SGD), "Optimizer has not the expected type"
     assert optimizer.defaults['lr'] == 0.001, "Learning rate is not correct"
     assert optimizer.defaults['weight_decay'] == 0.0001, "Weight decay is not correct"
@@ -241,7 +254,53 @@ def test_train(mock_train_parameters):
 
 
 
-#BEST MODEL PERFORMANCE TEST
+#EVALUATE SCRIPT TESTS
+
+def test_load_image(sample_image):
+    """
+    Function to test the load_image function
+    """
+    img = load_image(sample_image)
+    assert isinstance(img, Image.Image), "La función no retornó una instancia de imagen."
+    assert img.mode == "RGB", "La imagen no está en modo RGB."
+
+
+
+def test_preapare_validation_dataloaders():
+    """
+    Function to test that the DataLoader is correctly generated
+    """
+
+    batch_size = 32
+    valid_dataloader = preapare_validation_dataloaders(
+                        PROCESSED_VALID_IMAGES,
+                        batch_size
+                    )
+    
+    batch = next(iter(valid_dataloader))
+    print(batch[0].shape)
+    assert len(batch) == 2, "DataLoader has not the expected number of elements"
+    assert batch[0].shape[0] == batch_size, "The batch size is not correct"
+    assert batch[0].shape[2] == 224, "The height of the image is not correct"
+    assert batch[0].shape[3] == 224, "The width of the image is not correct"
+    assert batch[0].shape[1] == 3, "The number of channels is not correct"
+    assert len(valid_dataloader) > 0, "Dataloader does not have any data"
+
+
+
+def test_evaluate_model():
+    """
+    It tests the evaluate_model function
+    """
+    run_name = "MODEL_1.pkl"
+    with open(MODELS_DIR / run_name, "rb") as pickled_model:
+            model = pickle.load(pickled_model)
+    batch_size = 32
+    accuracy = evaluate_model(model, batch_size)
+    assert isinstance(accuracy, float), "Accuracy should be a float"
+    assert 0 <= accuracy <= 100, "Accuracy should be between a percentage"
+
+
 
 def test_best_model(best_model,cats_dogs_test_data):
     """
@@ -266,7 +325,6 @@ def test_best_model(best_model,cats_dogs_test_data):
             total += y.size(0)
             correct += (predicted == y).sum().item()
     accuracy = correct / total
-
     assert accuracy == pytest.approx(0.95, rel=0.05)
 
 

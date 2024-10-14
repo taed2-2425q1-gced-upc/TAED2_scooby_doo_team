@@ -37,7 +37,6 @@ def load_image(image_path: str) -> Any:
 
 
 def preapare_validation_dataloaders(
-        input_folder_path: Path,
         input_valid_images_path: Path,
         batch_size:int
     ) -> data.DataLoader:
@@ -86,7 +85,6 @@ def evaluate_model(model,batch_size: int) -> float:
     """
 
     valid_dataloader = preapare_validation_dataloaders(
-                        PROCESSED_DATA_DIR,
                         PROCESSED_VALID_IMAGES,
                         batch_size
                     )
@@ -108,9 +106,6 @@ def evaluate_model(model,batch_size: int) -> float:
     accuracy = (correct / total)*100
     print(f"Accuracy: {accuracy:.2f}%")
     return accuracy
-
-
-
 
 
 """

@@ -84,7 +84,7 @@ def get_optimizer(
 
     if algorithm == 'adam':
         return torch.optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
-    elif algorithm == 'sdg':
+    elif algorithm == 'sgd':
         return torch.optim.SGD(
                 model.parameters(),
                 lr=learning_rate,
