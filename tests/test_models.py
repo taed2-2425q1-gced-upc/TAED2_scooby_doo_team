@@ -4,14 +4,21 @@ This script contains the test_best_model function that tests the best model.
 
 import pickle
 import json
+from pathlib import Path
 
 import torch
 import pytest
 from torchvision import transforms
 from torch.utils import data
 
-from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TEST_IMAGES
+from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TRAIN_IMAGES,PROCESSED_TEST_IMAGES
+from src.models.train import load_params_train
+from src.models.train import combine_hyperparameters
+from src.models.train import get_model, get_optimizer
+from src.models.train import preapare_train_dataloaders
+from src.models.train import training
 from src.models.evaluate import load_image
+
 
 @pytest.fixture
 def best_model():
@@ -77,10 +84,170 @@ def cats_dogs_test_data():
 
 
 
+
+@pytest.fixture
+def mock_yaml_file(tmp_path):
+    """
+    Returns the path to a mock yaml file
+    """
+
+    yaml_content = """
+    train:
+        algorithm: VisualTransformer
+        model_name: google/vit-base-patch16-224
+        batch_size: 32
+        num_epochs: 10
+        learning_rate: 0.001
+        optimizer: adam
+        weight_decay: 0.0001
+        momentum: 0.9
+    """
+    yaml_path = tmp_path / "params_test.yaml"
+    yaml_path.write_text(yaml_content)
+    return yaml_path
+
+
+@pytest.fixture
+def mock_train_parameters():
+    """
+    Returns a dictionary with the parameters for the training
+    """
+
+    return {
+        "batch_size": 32,
+        "num_epochs": 2,
+        "algorithm": "VisualTransformer",
+        "model_name": "google/vit-base-patch16-224",
+        "learning_rate": 0.001,
+        "optimizer": "adam",
+        "weight_decay": 0.0001,
+        "momentum": 0.9
+    }
+
+
+
+#TRAINING SCRIPT TESTS
+
+def test_load_params_train(mock_yaml_file):
+    """
+    Function to check if the params are correctly loaded from the load_params_train function
+    """
+
+    params = load_params_train(mock_yaml_file)
+    assert params is not None, "Los parámetros no se cargaron correctamente."
+    assert params["algorithm"] == "VisualTransformer", "Algorithm is not correct."
+    assert params["model_name"] == "google/vit-base-patch16-224", "Model name is not correct."
+    assert params["batch_size"] == 32, "Batch size is not correct."
+
+
+
+
+
+def test_preapare_train_dataloaders():
+    """
+    Function to test that the DataLoader is correctly generated
+    """
+
+    batch_size = 32
+    train_dataloader = preapare_train_dataloaders(
+                        PROCESSED_TRAIN_IMAGES,
+                        batch_size
+                    )
+    
+    batch = next(iter(train_dataloader))
+    print(batch[0].shape)
+    assert len(batch) == 2, "DataLoader has not the expected number of elements."
+    assert batch[0].shape[0] == batch_size, "The batch size is not correct."
+    assert batch[0].shape[2] == 224, "The height of the image is not correct."
+    assert batch[0].shape[3] == 224, "The width of the image is not correct."
+    assert batch[0].shape[1] == 3, "The number of channels is not correct."
+
+
+
+
+def test_get_combine_hyperparameters():
+    """
+    Function to test that the hyperparameters are correctly combined
+    """
+
+    hyperparameters = (('adam', 'sgd'), (0.001, 0.01), (32, 64),(0.95,0.99))
+    num_combinations = 4
+    combinations = combine_hyperparameters(hyperparameters, num_combinations)
+
+    assert len(combinations) == num_combinations, "Combinations have not the expected length."
+    for combo in combinations:
+        assert combo[0] in ('adam', 'sgd'), "Optimizer is not correct"
+        assert combo[1] in (0.001, 0.01), "Learning rate is not correct"
+        assert combo[2] in (32, 64), "Batch size is not correct"
+        assert combo[3] in (0.95, 0.99), "Momentum is not correct"
+
+
+
+
+def test_get_model():
+    """
+    Function to test that in get_model funtion, the model is correctly initialized
+    """
+
+    model = get_model("VisualTransformer", "google/vit-base-patch16-224", ["cat", "dog"])
+    assert model is not None, "The model has not been initialized correctly"
+    assert model.config.num_labels == 2, "Number of labels is not correct."
+
+
+
+def test_get_optimizer():
+    """
+    Function to test that in get_optimizer funtion, the optimizer is correctly initialized
+    """
+
+    model = get_model("VisualTransformer", "google/vit-base-patch16-224", ["cat", "dog"])
+    #Example of parameters for th"""e optimizer if the optimizer is adam
+    optimizer = get_optimizer("adam", 0.001, 0.0001, 0.9, model)
+    assert isinstance(optimizer, torch.optim.Adam), "Optimizer has not the expected type"
+    assert optimizer.defaults['lr'] == 0.001, "Learning rate is not correct"
+    assert optimizer.defaults['weight_decay'] == 0.0001, "Weight decay is not correct"
+    assert 'momentum' not in optimizer.defaults, "Momentum is not correct"
+    #Example of parameters for the optimizer if the optimizer is sgd
+    optimizer = get_optimizer("sdg", 0.001, 0.0001, 0.9, model)
+    assert isinstance(optimizer, torch.optim.SGD), "Optimizer has not the expected type"
+    assert optimizer.defaults['lr'] == 0.001, "Learning rate is not correct"
+    assert optimizer.defaults['weight_decay'] == 0.0001, "Weight decay is not correct"
+    assert optimizer.defaults['momentum'] == 0.9, "Weight decay is not correct"
+
+
+
+
+def test_train(mock_train_parameters):
+    """
+    Function to test the training process
+    """
+    #Setup
+    model = get_model(mock_train_parameters["algorithm"], mock_train_parameters["model_name"], ["cat", "dog"])
+    optimizer = get_optimizer(
+        mock_train_parameters["optimizer"],
+        mock_train_parameters["learning_rate"],
+        mock_train_parameters["weight_decay"],
+        mock_train_parameters["momentum"],
+        model
+    )
+    device = torch.device("cpu")  # para el test usaremos CPU
+    loss_function = torch.nn.CrossEntropyLoss()
+
+    model, loss_per_epoch = training(mock_train_parameters, model, optimizer, device, loss_function)
+    
+    # Verificar que se entrena y que la pérdida por epoch está decreciendo
+    assert len(loss_per_epoch) == mock_train_parameters["num_epochs"], "Epochs don't match"
+    assert loss_per_epoch[0] > loss_per_epoch[-1], "La pérdida no está decreciendo después de entrenar."
+
+
+
+#BEST MODEL PERFORMANCE TEST
+
 def test_best_model(best_model,cats_dogs_test_data):
     """
     Function to test the best model
     """
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     best_model.to(device)
 
@@ -102,6 +269,16 @@ def test_best_model(best_model,cats_dogs_test_data):
 
     assert accuracy == pytest.approx(0.95, rel=0.05)
 
-    #TODO AÑADIR MÁS TESTS
+
+
+
+
+
+
+
 
     
+
+
+
+

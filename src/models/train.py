@@ -83,7 +83,7 @@ def get_optimizer(
     """
 
     if algorithm == 'adam':
-        return torch.optim.Adam(model.parameters(), lr=learning_rate)
+        return torch.optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
     elif algorithm == 'sdg':
         return torch.optim.SGD(
                 model.parameters(),
@@ -118,21 +118,19 @@ def load_image(image_path: str) -> Any:
     Creates and returns a PIL image from the specified path
     """
 
-    image = Image.open(image_path).convert("RGB")  # Asegúrate de que la imagen esté en RGB
+    image = Image.open(image_path).convert("RGB")
     return image
 
 
 
 
 def preapare_train_dataloaders(
-        input_folder_path,
         input_train_images_path: Path,
         batch_size: int
     ) -> data.DataLoader:
     """
     We get the training dataloaders
     """
-
 
     #Define the transformations for the images
     transform = transforms.Compose([
@@ -190,7 +188,7 @@ def prepare_training_objects(targets,parameters_run: dict[str,Any]):
 
 
 
-def train(
+def training(
         parameters_run: dict[str, Any],
         model: Any,
         optimizer: Any,
@@ -201,7 +199,6 @@ def train(
     Trains a model for a specified number of epochs.
     """
     train_dataloader = preapare_train_dataloaders(
-                        PROCESSED_DATA_DIR,
                         PROCESSED_TRAIN_IMAGES,
                         parameters_run["batch_size"]
                     )
@@ -293,7 +290,7 @@ for i,combination in enumerate(hyperparameter_combinations):
 
         #si pasa que hay otra proceso corriendo es porque la version es la 2.6.0
         tracker.start()
-        model,loss_per_epoch = train(parameters_run, model, optimizer, device, loss_function)
+        model,loss_per_epoch = training(parameters_run, model, optimizer, device, loss_function)
         tracker.stop()
 
         #We save the emissions metrics to mlflow
@@ -323,7 +320,6 @@ for i,combination in enumerate(hyperparameter_combinations):
         with open(MODELS_DIR / model_name, "wb") as pickle_file:
             pickle.dump(model, pickle_file)
 
-os.remove(emissions_output_folder / "emissions.csv")
 
 #Guarda parameters_list y run_ids en un json en la carpeta models
 with open("parameters_list.json", "w") as parameters_file:
