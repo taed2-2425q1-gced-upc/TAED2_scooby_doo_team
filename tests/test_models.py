@@ -101,3 +101,7 @@ def test_best_model(best_model,cats_dogs_test_data):
     accuracy = correct / total
 
     assert accuracy == pytest.approx(0.95, rel=0.05)
+
+    #TODO AÑADIR MÁS TESTS
+
+    

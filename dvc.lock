@@ -78,7 +78,7 @@ stages:
       size: 10342
     params:
       params.yaml:
-        train.combinations: 6
+        train.combinations: 1
         train.hyperparameters:
           algorithm:
           - VisualTransformer
@@ -94,7 +94,6 @@ stages:
           - 0.0001
           num_epochs:
           - 1
-          - 3
           weight_decay:
           - 0.0
           - 0.01
@@ -112,17 +111,17 @@ stages:
     outs:
     - path: models/
       hash: md5
-      md5: 6ed439006558d6fbce99aea00a1d09fa.dir
-      size: 2059787388
-      nfiles: 6
+      md5: b04c5fb7f129b2093e0fbf9ba5316cb8.dir
+      size: 343297898
+      nfiles: 1
     - path: parameters_list.json
       hash: md5
-      md5: 8efc368aa2e2d07e60c856874897f884
-      size: 1954
+      md5: 2e8aa30229b5e9e7571d0305fe30bc86
+      size: 332
     - path: parameters_run.json
       hash: md5
-      md5: 168862808b9fa81055fc55f42bc7873a
-      size: 315
+      md5: 02cd14437c10ca33079d83ac3a986ded
+      size: 55
   evaluate:
     cmd: python -m src.models.evaluate
     deps:
@@ -136,9 +135,9 @@ stages:
       size: 1238
     - path: models/
       hash: md5
-      md5: 6ed439006558d6fbce99aea00a1d09fa.dir
-      size: 2059787388
-      nfiles: 6
+      md5: b04c5fb7f129b2093e0fbf9ba5316cb8.dir
+      size: 343297898
+      nfiles: 1
     - path: src/models/evaluate.py
       hash: md5
       md5: 8e61dd5b6a28c6197464c03b91f77c5d
@@ -146,5 +145,5 @@ stages:
     outs:
     - path: metrics/scores.json
       hash: md5
-      md5: 7c1e140e9fb0f367952455e94150f7fe
-      size: 90
+      md5: a4b6ed1ecd5ecdc72a847f3a47e02780
+      size: 91
