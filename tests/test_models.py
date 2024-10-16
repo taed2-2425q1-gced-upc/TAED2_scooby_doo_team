@@ -4,14 +4,43 @@ This script contains the test_best_model function that tests the best model.
 
 import pickle
 import json
-
+import pandas as pd
 import torch
 import pytest
 from torchvision import transforms
 from torch.utils import data
 
-from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TEST_IMAGES
+from src.config import METRICS_DIR, MODELS_DIR, PROCESSED_TEST_IMAGES, PROCESSED_DATA_DIR
 from src.models.evaluate import load_image
+
+#@pytest.fixture
+#def prepared_images_path():
+#    return Path("/ruta/a/las/imagenes/procesadas")
+
+@pytest.fixture
+def x_train():
+    return pd.read_csv(PROCESSED_DATA_DIR / "X_train.csv")
+
+@pytest.fixture
+def y_train():
+    return pd.read_csv(PROCESSED_DATA_DIR / "y_train.csv")
+
+@pytest.fixture
+def x_valid():
+    return pd.read_csv(PROCESSED_DATA_DIR / "X_valid.csv")
+
+@pytest.fixture
+def y_valid():
+    return pd.read_csv(PROCESSED_DATA_DIR / "y_valid.csv")
+
+@pytest.fixture
+def x_test():
+    return pd.read_csv(PROCESSED_DATA_DIR / "X_test.csv")
+
+@pytest.fixture
+def y_test():
+    return pd.read_csv(PROCESSED_DATA_DIR / "y_test.csv")
+
 
 @pytest.fixture
 def best_model():
@@ -101,3 +130,47 @@ def test_best_model(best_model,cats_dogs_test_data):
     accuracy = correct / total
 
     assert accuracy == pytest.approx(0.95, rel=0.05)
+
+'''
+def test_cats_dogs_folders_have_images(prepared_images_path):
+    """
+    Verifies that the 'cats' and 'dogs' folders contain saved images.
+    """
+    cats_images = list((prepared_images_path / "cats").glob("*.jpg"))
+    dogs_images = list((prepared_images_path / "dogs").glob("*.jpg"))
+    
+    assert len(cats_images) > 0
+    assert len(dogs_images) > 0
+'''
+
+
+def test_train_has_more_images_than_valid_and_test(x_train, x_valid, x_test):
+    """
+    Checks that the training set has more images than the validation and test sets.
+    """
+    assert len(x_train) > len(x_valid)
+    assert len(x_train) > len(x_test)
+
+
+def test_data_csv_files_exist():
+    """
+    Checks if the data CSV files for train, valid, and test are saved correctly.
+    """
+    assert (PROCESSED_DATA_DIR / "X_train.csv").exists(), "X_train.csv file not found"
+    assert (PROCESSED_DATA_DIR / "y_train.csv").exists(), "y_train.csv file not found"
+    assert (PROCESSED_DATA_DIR / "X_valid.csv").exists(), "X_valid.csv file not found"
+    assert (PROCESSED_DATA_DIR / "y_valid.csv").exists(), "y_valid.csv file not found"
+    assert (PROCESSED_DATA_DIR / "X_test.csv").exists(), "X_test.csv file not found"
+    assert (PROCESSED_DATA_DIR / "y_test.csv").exists(), "y_test.csv file not found"
+
+
+def test_data_csv_row_counts(x_train, y_train, x_valid, y_valid, x_test, y_test):
+    """
+    Ensures that the number of rows in the CSV matches the number of images in each set.
+    """
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "X_train.csv")) == len(x_train), "Mismatch in X_train row count"
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "y_train.csv")) == len(y_train), "Mismatch in y_train row count"
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "X_valid.csv")) == len(x_valid), "Mismatch in X_valid row count"
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "y_valid.csv")) == len(y_valid), "Mismatch in y_valid row count"
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "X_test.csv")) == len(x_test), "Mismatch in X_test row count"
+    assert len(pd.read_csv(PROCESSED_DATA_DIR / "y_test.csv")) == len(y_test), "Mismatch in y_test row count"
