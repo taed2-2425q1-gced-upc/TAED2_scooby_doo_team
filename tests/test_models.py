@@ -11,12 +11,13 @@ import pytest
 from torchvision import transforms
 from torch.utils import data
 from PIL import Image
+import yaml
+from unittest.mock import patch, mock_open
 
 from src.config import PROCESSED_DATA_DIR,RAW_DATA_DIR,METRICS_DIR, MODELS_DIR, PROCESSED_TRAIN_IMAGES,PROCESSED_TEST_IMAGES,PROCESSED_VALID_IMAGES,MODELS_DIR
-from src.features.prepare import load_data,load_params_prepare,split_data,save_data
-from src.models.train import load_params_train,combine_hyperparameters,get_model,get_optimizer,preapare_train_dataloaders,training
+from src.features.prepare import load_data,load_params,split_data,save_data
+from src.models.train import combine_hyperparameters,prepare_training_objects,get_model,prepare_hyperparameters_combinations,get_optimizer,preapare_train_dataloaders,training
 from src.models.evaluate import preapare_validation_dataloaders,load_image,evaluate_model
-
 
 
 #Prepare fixtures
@@ -205,12 +206,24 @@ def test_load_params_prepare(mock_yaml_file):
     Function to test the load_params_prepare function
     """
 
-    params = load_params_prepare(mock_yaml_file)
+    params = load_params(mock_yaml_file,"prepare")
     assert params is not None, "Parameters are not loaded correctly"
     assert params["valid_size"] == 0.5, "Valid size is not correct"
     assert params["random_state"] == 2024, "Random state is not correct"
     assert params["train_size"] == 0.6, "Train size is not correct"
     assert params["test_size"] == 0.5, "Test size is not correct"
+
+
+
+
+def test_load_params_yaml_error():
+    """
+    Function to test that an exception in load_params is handled correctly
+    """
+    with patch("builtins.open", mock_open(read_data="invalid data")):
+        with patch("yaml.safe_load", side_effect=yaml.YAMLError("Mock YAML error")):
+            params = load_params("fake_path.yaml", "prepare")
+            assert params is None, "YAMLError was not handled correctly"
 
 
 
@@ -275,25 +288,6 @@ def test_save_data(split_data_mock):
 
 #TRAINING SCRIPT TESTS
 
-def test_load_params_train(mock_yaml_file):
-    """
-    Function to check if the params are correctly loaded from the load_params_train function
-    """
-
-    params = load_params_train(mock_yaml_file)
-    assert params is not None, "Los parámetros no se cargaron correctamente."
-    assert params["algorithm"] == "VisualTransformer", "Algorithm is not correct"
-    assert params["model_name"] == "google/vit-base-patch16-224", "Model name is not correct"
-    assert params["batch_size"] == 32, "Batch size is not correct"
-    assert params["num_epochs"] == 10, "Number of epochs is not correct"
-    assert params["learning_rate"] == 0.001, "Learning rate is not correct"
-    assert params["optimizer"] == "adam", "Optimizer is not correct"
-    assert params["weight_decay"] == 0.0001, "Weight decay is not correct"
-    assert params["momentum"] == 0.9, "Momentum is not correct"
-
-
-
-
 def test_preapare_train_dataloaders():
     """
     Function to test that the DataLoader is correctly generated
@@ -336,6 +330,26 @@ def test_get_combine_hyperparameters():
 
 
 
+def test_prepare_hyperparameters_combinations():
+    """
+    Function to test that the hyperparameters are correctly prepared
+    """
+    parameters = {
+        "hyperparameters": {
+            "learning_rate": [0.01, 0.001],
+            "batch_size": [16, 32]
+        },
+        "combinations": 4
+    }
+
+    combinations, names = prepare_hyperparameters_combinations(parameters)
+    
+    assert combinations is not None
+    assert list(names) == ["learning_rate", "batch_size"]
+
+
+
+
 def test_get_model():
     """
     Function to test that in get_model funtion, the model is correctly initialized
@@ -366,7 +380,14 @@ def test_get_optimizer(best_model):
     assert optimizer.defaults['weight_decay'] == 0.0001, "Weight decay is not correct"
     assert optimizer.defaults['momentum'] == 0.9, "Weight decay is not correct"
 
+def test_prepare_training_objects(mock_train_parameters):
 
+    targets = ["cat", "dog"]
+    model, optimizer, device, loss_function = prepare_training_objects(targets,mock_train_parameters)
+    assert model is not None, "The model has not been initialized correctly"
+    assert optimizer is not None, "The optimizer has not been initialized correctly"
+    assert device == torch.device("cuda" if torch.cuda.is_available() else "cpu"), "The device is not correct"
+    assert loss_function is not None, "The loss function has not been initialized correctly"
 
 
 def test_train(mock_train_parameters,best_model):

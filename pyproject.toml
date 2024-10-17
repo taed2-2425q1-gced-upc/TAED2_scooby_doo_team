@@ -35,7 +35,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.run]
-omit = ["src/prepare.py", "src/evaluate.py", "src/train.py", "src/train_api_demo_models.py"]
+omit = ["src/config.py","src/__init__.py","src/models/__init__.py"]
 
 [tool.pytest.ini_options]
 pythonpath = "."

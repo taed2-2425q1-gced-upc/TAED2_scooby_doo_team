@@ -32,14 +32,14 @@ def load_data(input_folder_path):
 
 
 
-def load_params_prepare(path):
+def load_params(path,phase):
     """
     Load the parameters from the params.yaml file
     """
     with open(path, "r", encoding="utf-8") as params_file:
         try:
             parameters = yaml.safe_load(params_file)
-            return parameters["prepare"]
+            return parameters[phase]
         except yaml.YAMLError as exc:
             print(exc)
             return None
@@ -117,14 +117,14 @@ def save_data(x_train, y_train, x_valid, y_valid, x_test, y_test):
 
 
 """Función principal"""
+if __name__ == "__main__": # pragma: no cover
+    params_path = Path("params.yaml")
 
-params_path = Path("params.yaml")
+    df = load_data(RAW_DATA_DIR)
+    params = load_params(params_path,"prepare")
 
-df = load_data(RAW_DATA_DIR)
-params = load_params_prepare(params_path)
-
-if params:
-    x_train_data, x_valid_data, x_test_data, y_train_data, y_valid_data, y_test_data = split_data(df, params)
-    save_data(x_train_data, y_train_data, x_valid_data,
-              y_valid_data, x_test_data, y_test_data
-              )
+    if params:
+        x_train_data, x_valid_data, x_test_data, y_train_data, y_valid_data, y_test_data = split_data(df, params)
+        save_data(x_train_data, y_train_data, x_valid_data,
+                y_valid_data, x_test_data, y_test_data
+                )

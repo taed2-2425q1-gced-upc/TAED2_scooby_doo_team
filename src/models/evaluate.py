@@ -111,59 +111,60 @@ def evaluate_model(model,batch_size: int) -> float:
 """
 Main function for the validation process
 """
-#Load the parameters and run_ids from training script
-with open("parameters_list.json", "r") as parameters_run_file:
-    parameters_run = json.load(parameters_run_file)
+if __name__ == "__main__": # pragma: no cover
+    #Load the parameters and run_ids from training script
+    with open("parameters_list.json", "r") as parameters_run_file:
+        parameters_run = json.load(parameters_run_file)
 
-with open("parameters_run.json", "r") as run_ids_file:
-    run_ids = json.load(run_ids_file)
+    with open("parameters_run.json", "r") as run_ids_file:
+        run_ids = json.load(run_ids_file)
 
-Path("metrics").mkdir(exist_ok=True)
-metrics_folder_path = METRICS_DIR
+    Path("metrics").mkdir(exist_ok=True)
+    metrics_folder_path = METRICS_DIR
 
-#Set mlflow
-mlflow.set_tracking_uri(TRACKING_MLFLOW)
-mlflow.set_experiment(EXPERIMENT_NAME)
+    #Set mlflow
+    mlflow.set_tracking_uri(TRACKING_MLFLOW)
+    mlflow.set_experiment(EXPERIMENT_NAME)
 
-best_model = None
-best_accuracy = 0
+    best_model = None
+    best_accuracy = 0
 
-#Validation for each model
-for combination in parameters_run:
-    run_id = run_ids[combination]
-    with mlflow.start_run(run_id=run_id) as run:
-        run_name = combination + ".pkl"
-        combination_params = parameters_run[combination]
+    #Validation for each model
+    for combination in parameters_run:
+        run_id = run_ids[combination]
+        with mlflow.start_run(run_id=run_id) as run:
+            run_name = combination + ".pkl"
+            combination_params = parameters_run[combination]
 
-        with open(MODELS_FOLDER_PATH / run_name, "rb") as pickled_model:
-            model = pickle.load(pickled_model)
+            with open(MODELS_FOLDER_PATH / run_name, "rb") as pickled_model:
+                model = pickle.load(pickled_model)
 
-        accuracy = evaluate_model(model,combination_params["batch_size"])
+            accuracy = evaluate_model(model,combination_params["batch_size"])
 
-        metrics_dict = {"Accuracy": accuracy}
-        mlflow.log_metrics(metrics_dict)
+            metrics_dict = {"Accuracy": accuracy}
+            mlflow.log_metrics(metrics_dict)
 
-    #To select the best model we focus on the accuracy
-    if accuracy > best_accuracy:
-        best_accuracy = accuracy
-        best_model = combination
-        best_run_id = run.info.run_id
+        #To select the best model we focus on the accuracy
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_model = combination
+            best_run_id = run.info.run_id
 
-#Add the best model tag to the mlflow
-with mlflow.start_run(run_id=best_run_id):  
-    mlflow.set_tag("Best_model", "True")
+    #Add the best model tag to the mlflow
+    with mlflow.start_run(run_id=best_run_id):  
+        mlflow.set_tag("Best_model", "True")
 
-#Save the metric of the best model in a json file
-metrics_dict = {
-                "Run_name":best_model,
-                "Accuracy": best_accuracy,
-                "Batch_size":parameters_run[best_model]["batch_size"]
-            }
-with open(metrics_folder_path / "scores.json", "w") as scores_file:
-    json.dump(
-        metrics_dict,
-        scores_file,
-        indent=4,
-    )
+    #Save the metric of the best model in a json file
+    metrics_dict = {
+                    "Run_name":best_model,
+                    "Accuracy": best_accuracy,
+                    "Batch_size":parameters_run[best_model]["batch_size"]
+                }
+    with open(metrics_folder_path / "scores.json", "w") as scores_file:
+        json.dump(
+            metrics_dict,
+            scores_file,
+            indent=4,
+        )
 
-print("Evaluation completed.")
+    print("Evaluation completed.")
