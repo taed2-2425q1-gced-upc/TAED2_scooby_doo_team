@@ -12,7 +12,7 @@ import pickle
 import numpy as np
 from zipfile import ZipFile
 import os
-from grad_cam import GradCAM 
+from src.app.grad_cam import GradCAM 
 import cv2
 
 model = None
@@ -21,8 +21,12 @@ image_counter = 0
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     '''
-    Function for intialization and cleanup
+    Function for intialization and cleanup. This will select the best model from the ones available on the server
+    in order to make predictions.
+
+    @param app: the api
     '''
+
     try:
         global model
 
@@ -30,7 +34,7 @@ async def lifespan(app: FastAPI):
             filename
             for filename in MODELS_DIR.iterdir()
             if filename.suffix == ".pkl" 
-        ]
+        ]   
 
         model_path = models_path[0]
         with open(model_path,"rb") as file:
@@ -90,68 +94,75 @@ async def predict_image(files: List[UploadFile]):
     @returns: classifiction of the image in the format {"class":"dog"} or {"class":"cat"}
     '''
     results = []
-    try:
-        for file in files:
-            if not allowed_file_format(file):
-                results.append({
-                    "filename": file.filename,
-                    "message": "Unsupported file format",
-                    "status_code": HTTPStatus.BAD_REQUEST
-                })
-                continue
-
-            image_bytes = await file.read()
-            image = image_to_tensor(image_bytes)
-            await file.close()
-
-            logits = model(image).logits.detach()[0]
-
-            prediction = np.argmax(logits).tolist()
-            probabilities = torch.softmax(torch.tensor(logits), dim=0).numpy()
-
-            if prediction == 0:
-                prediction = "cat"
-            else: 
-                prediction = "dog"
-            
-            class_prediction_counts[prediction] += 1
-            grad_cam = GradCAM(model=model, target_layer=model.layer4[-1])  # Adjust target layer based on your model
-            heatmap = grad_cam(image, class_idx=prediction)
-
-            # Convert the original image to numpy array for visualization
-            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-            image_np = np.array(image)
-
-            # Superimpose the heatmap onto the original image
-            cam_image = superimpose_heatmap(image_np, heatmap)
-
-            # Save the explanation (superimposed image)
-            explanation_path = f"/tmp/{file.filename}_gradcam.png"
-            Image.fromarray(cam_image).save(explanation_path)
-
+    # try:
+    for file in files:
+        if not allowed_file_format(file):
             results.append({
                 "filename": file.filename,
-                "message":HTTPStatus.OK.phrase,
-                "status-code":HTTPStatus.OK,
-                "class":prediction,
-                "probabilities": {
-                    "cat": probabilities[0],
-                    "dog": probabilities[1]
-                },
-                "prediction_counts": class_prediction_counts,
-                "explanation_image_path": explanation_path
+                "message": "Unsupported file format",
+                "status_code": HTTPStatus.BAD_REQUEST
             })
-            image_counter += 1
+            continue
 
-        return {"message": "Detailed predictions for all images", "results": results}
+        image_bytes = await file.read()
+        image = image_to_tensor(image_bytes)
+        await file.close()
 
-    except Exception as e:
-        response = {
-            "message": HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
-            "status_code": HTTPStatus.INTERNAL_SERVER_ERROR,
-            "details": str(e)
-        }
-        return response
+        logits = model(image).logits.detach()[0]
+
+        prediction = None
+        prediction_score = np.argmax(logits).tolist()
+        probabilities = torch.softmax(torch.tensor(logits), dim=0).numpy()
+
+        if prediction_score == 0:
+            prediction = "cat"
+        else: 
+            prediction = "dog"
+
+        name, child = next(iter(model.named_children()))
+
+        print(f'name {name}')
+        print(f'chldred {child}')
+        print(f'attention {child.encoder.layer[-1]}')
+
+        class_prediction_counts[prediction] += 1
+        grad_cam = GradCAM(model=model, target_layer=child.encoder.layer[-1])  # Adjust target layer based on your model
+        heatmap = grad_cam(image, class_idx=prediction_score)
+
+        # Convert the original image to numpy array for visualization
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image_np = np.array(image)
+
+        # Superimpose the heatmap onto the original image
+        cam_image = superimpose_heatmap(image_np, heatmap)
+
+        # Save the explanation (superimposed image)
+        explanation_path = f"/tmp/{file.filename}_gradcam.png"
+        Image.fromarray(cam_image).save(explanation_path)
+
+        results.append({
+            "filename": file.filename,
+            "message":HTTPStatus.OK.phrase,
+            "status-code":HTTPStatus.OK,
+            "class":prediction,
+            "probabilities": {
+                "cat": probabilities[0],
+                "dog": probabilities[1]
+            },
+            "prediction_counts": class_prediction_counts,
+            "explanation_image_path": explanation_path
+        })
+        image_counter += 1
+
+    return {"message": "Detailed predictions for all images", "results": results}
+
+    # except Exception as e:
+        # response = {
+        #     "message": HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
+        #     "status_code": HTTPStatus.INTERNAL_SERVER_ERROR,
+        #     "details": str(e)
+        # }
+        # return response
 
 def get_model_summary():
     return summary(model, input_size=(3, 224, 224), verbose=0)

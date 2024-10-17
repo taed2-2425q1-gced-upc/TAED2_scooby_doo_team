@@ -17,7 +17,8 @@ class GradCAM:
         self.gradients = grad_out[0]
 
     def generate_heatmap(self, class_idx):
-        pooled_gradients = torch.mean(self.gradients, dim=[0, 2, 3])
+        print(self.gradients.shape)
+        pooled_gradients = torch.mean(self.gradients, dim=[0])
 
         for i in range(self.activations.shape[1]):
             self.activations[:, i, :, :] *= pooled_gradients[i]
@@ -31,7 +32,9 @@ class GradCAM:
     def __call__(self, input_tensor, class_idx):
         output = self.model(input_tensor)
         self.model.zero_grad()
-        class_score = output[0, class_idx]
+        print('-' * 100)
+        print(output)
+        class_score = output[0][0][class_idx]
         class_score.backward(retain_graph=True)
         heatmap = self.generate_heatmap(class_idx)
         return heatmap
