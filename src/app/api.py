@@ -1,19 +1,20 @@
 from http import HTTPStatus
 from fastapi import FastAPI, UploadFile
+from fastapi.responses import HTMLResponse
 from torchvision import transforms
 from contextlib import asynccontextmanager
 from PIL import Image
 from src.config import MODELS_DIR
 from typing import List
-from torchsummary import summary
 import torch
 import io
 import pickle
 import numpy as np
-from zipfile import ZipFile
+import zipfile
 import os
 from src.app.grad_cam import GradCAM 
 import cv2
+from torchinfo import summary
 
 model = None
 image_counter = 0 
@@ -35,6 +36,9 @@ async def lifespan(app: FastAPI):
             for filename in MODELS_DIR.iterdir()
             if filename.suffix == ".pkl" 
         ]   
+        if not models_path:
+           raise FileNotFoundError("No model file found in the specified directory.")
+
 
         model_path = models_path[0]
         with open(model_path,"rb") as file:
@@ -165,30 +169,38 @@ async def predict_image(files: List[UploadFile]):
         # return response
 
 def get_model_summary():
-    return summary(model, input_size=(3, 224, 224), verbose=0)
+    """Return the summary of the model."""
+    return summary(model, input_size=(1, 3, 224, 224), depth=4)
 
-def get_model_parameters():
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 @app.get("/model-stats")
 async def model_stats():
-    try:
-        model_summary = get_model_summary() 
-        model_params = get_model_parameters()  
+   global model
+   if model is None:
+       return {
+           "message": "Model is not loaded.",
+           "status-code": HTTPStatus.INTERNAL_SERVER_ERROR,
+           "details": "Model is None."
+       }
+   try:
+       model_summary = get_model_summary()
+       summary_str = str(model_summary)
+       status_code = HTTPStatus.OK
 
-        return {
-            "message": "Model statistics",
-            "status-code": HTTPStatus.OK,
-            "trainable_parameters": model_params,
-            "model_summary": str(model_summary)  
-        }
 
-    except Exception as e:
-        return {
-            "message": "Error fetching model stats",
-            "status-code": HTTPStatus.INTERNAL_SERVER_ERROR,
-            "details": str(e)
-        }
+       return HTMLResponse(
+           content=f"""{summary_str},
+           Status Code: {status_code}
+           """
+       )
+
+
+   except Exception as e:
+       return {
+           "message": "Error fetching model stats",
+           "status-code": HTTPStatus.INTERNAL_SERVER_ERROR,
+           "details": str(e)
+       }
 
 
 @app.get("/health")
@@ -206,38 +218,98 @@ async def health_check():
 
 @app.post("/evaluate-dataset")
 async def evaluate_dataset(file: UploadFile):
-    try:
-        # Extract zip file containing the dataset
-        zip_path = f"/tmp/{file.filename}"
-        with open(zip_path, "wb") as buffer:
-            buffer.write(await file.read())
-        with ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall("/tmp/dataset")
+   try:
+       extract_to = "/tmp/dataset"
+       os.makedirs(extract_to, exist_ok=True)
+
+
+       contents = await file.read()
+       zip_path = f"/tmp/{file.filename}"
+
+
+       with open(zip_path, "wb") as buffer:
+           buffer.write(contents)
+
+
+       with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+           for file_info in zip_ref.infolist():
+               if file_info.is_dir() or "__MACOSX" in file_info.filename or file_info.filename.startswith('.'):
+                   continue
+               zip_ref.extract(file_info, extract_to)
+
+
+       # Process each image in the dataset folder
+       predictions = []
+       correct = 0
+       total = 0
+       has_labels = False
+
+
+       for img_file in os.listdir(extract_to):
+           img_path = os.path.join(extract_to, img_file)
+
+
+           if os.path.isfile(img_path) and img_file.lower().endswith(('png', 'jpg', 'jpeg', 'gif', 'webp')):
+               with open(img_path, 'rb') as img_f:
+                   image_bytes = img_f.read()
+                   image = image_to_tensor(image_bytes)
+
+
+               # Get model prediction
+               logits = model(image).logits.detach()[0]
+               prediction = np.argmax(logits).tolist()
+               probabilities = torch.softmax(logits.clone().detach(), dim=0).numpy()
+
+
+               prob_cat = float(probabilities[0])
+               prob_dog = float(probabilities[1])
+
+
+
+
+               # Assuming 0 is "cat" and 1 is "dog"
+               class_name = "cat" if prediction == 0 else "dog"
+
+
+
+
+               # Store prediction and probabilities
+               predictions.append({
+                   "filename": img_file,
+                   "predicted_class": class_name,
+                   "probabilities": {
+                       "cat": prob_cat,
+                       "dog": prob_dog
+                   }
+               })
+
+
+               # Check if true labels exist in filenames (e.g., "cat1.jpg", "dog2.png")
+               if "cat" in img_file or "dog" in img_file:
+                   has_labels = True
+                   true_label = "cat" if "cat" in img_file else "dog"
+                   if class_name == true_label:
+                       correct += 1
+                   total += 1
+
+
+       # Prepare response with or without accuracy depending on labels
+       response = {
+           "message": HTTPStatus.OK.phrase,
+           "status-code": HTTPStatus.OK,
+           "predictions": predictions,
+           "total_images": len(predictions)
+       }
+       if has_labels and total > 0:
+           accuracy = correct / total
+           response["accuracy"] = accuracy
+           response["labeled_images"] = total
         
-        # Process each image in the dataset folder
-        correct = 0
-        total = 0
-        for img_file in os.listdir("/tmp/dataset"):
-            img_path = f"/tmp/dataset/{img_file}"
-
-            with open(img_path, 'rb') as img_f:
-                image_bytes = img_f.read()
-                image = image_to_tensor(image_bytes)
-
-            # Get model prediction
-            prediction = np.argmax(model(image).logits.detach()[0]).tolist()
-
-            # Assuming image filenames indicate true label
-            true_label = "cat" if "cat" in img_file else "dog"  
-            class_name = "cat" if prediction == 0 else "dog"
-            
-            if class_name == true_label:
-                correct += 1
-            total += 1
-        
-        accuracy = correct / total
-
-        return {"accuracy": accuracy, "total_images": total}
-    
-    except Exception as e:
-        return {"error": str(e)}
+       return response
+  
+   except Exception as e:
+       return {
+           "message": "Error processing ZIP file or images",
+           "status-code": HTTPStatus.INTERNAL_SERVER_ERROR,
+           "details": str(e)
+       }
