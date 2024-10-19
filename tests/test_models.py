@@ -130,10 +130,14 @@ def best_model():
     #open the scores.json file to get the name of the best model
     with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
         data_scores = json.load(file)
-    best_model_name = (
-    data_scores["Run_name"] + ".pkl"
-)
-
+    #recorrer los modelos y seleccionar la key con el mejor score
+    best_model_name = None
+    best_score = 0
+    for model_name, value in data_scores.items():
+        if value["metrics"] > best_score:
+            best_score = value["metrics"]
+            best_model_name = model_name
+    best_model_name = best_model_name + ".pkl"
     #return the best model
     with open(MODELS_DIR / best_model_name, "rb") as f:
         return pickle.load(f)
@@ -182,7 +186,13 @@ def cats_dogs_test_data():
     #Obtain the batch size from the scores.json file
     with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
         data_scores = json.load(file)
-    batch_size = data_scores["Batch_size"]
+    best_model_name = None
+    best_score = 0
+    for model_name, value in data_scores.items():
+        if value["metrics"] > best_score:
+            best_score = value["metrics"]
+            best_model_name = model_name
+    batch_size = data_scores[best_model_name]["params"]["batch_size"]
 
     return obtain_test_data(PROCESSED_TEST_IMAGES, batch_size)
 
