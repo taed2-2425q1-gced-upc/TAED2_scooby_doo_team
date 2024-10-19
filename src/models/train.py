@@ -222,6 +222,11 @@ def training(
 Main function for the training process
 """
 if __name__ == "__main__": # pragma: no cover
+    rating_models_api = Path("metrics/model_stats_api.json")
+    #We remove the file if it exists because we are going to create new models
+    if rating_models_api.exists():
+        os.remove(rating_models_api)
+
     params_path = Path("params.yaml")
     parameters = load_params(params_path,"train")
     emissions_output_folder = METRICS_DIR

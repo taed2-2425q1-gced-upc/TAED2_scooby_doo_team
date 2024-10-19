@@ -129,6 +129,8 @@ if __name__ == "__main__": # pragma: no cover
     best_model = None
     best_accuracy = 0
 
+    metric_to_save = {}
+
     #Validation for each model
     for combination in parameters_run:
         run_id = run_ids[combination]
@@ -143,6 +145,10 @@ if __name__ == "__main__": # pragma: no cover
 
             metrics_dict = {"Accuracy": accuracy}
             mlflow.log_metrics(metrics_dict)
+            info = {"params": combination_params, "metrics": accuracy}
+            if combination not in metric_to_save:
+                metric_to_save[combination] = {}
+            metric_to_save[combination] = info
 
         #To select the best model we focus on the accuracy
         if accuracy > best_accuracy:
@@ -154,15 +160,9 @@ if __name__ == "__main__": # pragma: no cover
     with mlflow.start_run(run_id=best_run_id):  
         mlflow.set_tag("Best_model", "True")
 
-    #Save the metric of the best model in a json file
-    metrics_dict = {
-                    "Run_name":best_model,
-                    "Accuracy": best_accuracy,
-                    "Batch_size":parameters_run[best_model]["batch_size"]
-                }
     with open(metrics_folder_path / "scores.json", "w") as scores_file:
         json.dump(
-            metrics_dict,
+            metric_to_save,
             scores_file,
             indent=4,
         )
