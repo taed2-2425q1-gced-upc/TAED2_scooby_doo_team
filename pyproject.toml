@@ -22,6 +22,10 @@ fastapi = "<0.120"
 dvc = ">3.0,<3.60"
 deepchecks = {extras = ["vision"], version = "^0.18.1"}
 scikit-learn = "<1.4"
+uvicorn = {extras = ["standard"], version = "^0.31.1"}
+python-multipart = "^0.0.12"
+torchsummary = "^1.5.1"
+torchinfo = "^1.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -35,7 +39,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.run]
-omit = ["src/prepare.py", "src/evaluate.py", "src/train.py", "src/train_api_demo_models.py"]
+omit = ["src/config.py","src/__init__.py","src/models/__init__.py"]
 
 [tool.pytest.ini_options]
 pythonpath = "."

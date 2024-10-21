@@ -22,24 +22,12 @@ from PIL import Image
 from torchvision import transforms
 from transformers import ViTForImageClassification
 from codecarbon import EmissionsTracker
-from src.config import PROCESSED_DATA_DIR,PROCESSED_TRAIN_IMAGES, \
+from src.config import PROCESSED_TRAIN_IMAGES, \
     MODELS_DIR,METRICS_DIR,TRACKING_MLFLOW,EXPERIMENT_NAME
+from src.features.prepare import load_params
 
 
 
-
-def load_params_train(parameters_path: str) -> Any:
-    """
-    Loads the parameters from a YAML file
-    """
-
-    with open(parameters_path, "r") as params_file:
-        try:
-            params = yaml.safe_load(params_file)
-            return params["train"]
-        except yaml.YAMLError as exc:
-            print(exc)
-            return None
 
 
 
@@ -83,8 +71,8 @@ def get_optimizer(
     """
 
     if algorithm == 'adam':
-        return torch.optim.Adam(model.parameters(), lr=learning_rate)
-    elif algorithm == 'sdg':
+        return torch.optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
+    elif algorithm == 'sgd':
         return torch.optim.SGD(
                 model.parameters(),
                 lr=learning_rate,
@@ -118,21 +106,19 @@ def load_image(image_path: str) -> Any:
     Creates and returns a PIL image from the specified path
     """
 
-    image = Image.open(image_path).convert("RGB")  # Asegúrate de que la imagen esté en RGB
+    image = Image.open(image_path).convert("RGB")
     return image
 
 
 
 
 def preapare_train_dataloaders(
-        input_folder_path,
         input_train_images_path: Path,
         batch_size: int
     ) -> data.DataLoader:
     """
     We get the training dataloaders
     """
-
 
     #Define the transformations for the images
     transform = transforms.Compose([
@@ -190,7 +176,7 @@ def prepare_training_objects(targets,parameters_run: dict[str,Any]):
 
 
 
-def train(
+def training(
         parameters_run: dict[str, Any],
         model: Any,
         optimizer: Any,
@@ -201,7 +187,6 @@ def train(
     Trains a model for a specified number of epochs.
     """
     train_dataloader = preapare_train_dataloaders(
-                        PROCESSED_DATA_DIR,
                         PROCESSED_TRAIN_IMAGES,
                         parameters_run["batch_size"]
                     )
@@ -236,100 +221,100 @@ def train(
 """
 Main function for the training process
 """
+if __name__ == "__main__": # pragma: no cover
 
-params_path = Path("params.yaml")
-parameters = load_params_train(params_path)
-emissions_output_folder = METRICS_DIR
+    params_path = Path("params.yaml")
+    parameters = load_params(params_path,"train")
+    emissions_output_folder = METRICS_DIR
 
-#Hyperparameters that we are going to use for the training
-hyperparameter_combinations, hyperparameter_names = prepare_hyperparameters_combinations(parameters)
+    #Hyperparameters that we are going to use for the training
+    hyperparameter_combinations, hyperparameter_names = prepare_hyperparameters_combinations(parameters)
 
-targets = parameters['targets']
+    targets = parameters['targets']
 
-Path("models").mkdir(exist_ok=True)
-Path(emissions_output_folder).mkdir(parents=True, exist_ok=True)
+    Path("models").mkdir(exist_ok=True)
+    Path(emissions_output_folder).mkdir(parents=True, exist_ok=True)
 
-#logging.getLogger("codecarbon").disabled = True
-
-
-#Set mlflow
-mlflow.set_tracking_uri(TRACKING_MLFLOW)
-try:
-    mlflow.set_experiment(EXPERIMENT_NAME)
-except mlflow.exceptions.MlflowException as e:
-    mlflow.create_experiment(EXPERIMENT_NAME)
-    mlflow.set_experiment(EXPERIMENT_NAME)
-
-parameters_dict = {}
-run_ids = {}
-
-for i,combination in enumerate(hyperparameter_combinations):
-    parameters_run = dict(zip(hyperparameter_names,combination))
-
-    final_id = f"Model_{i+1}"
-
-    parameters_run["name_model"] = final_id
-
-    with mlflow.start_run(run_name=final_id) as run:
-        mlflow.log_params(parameters_run)
-
-        if parameters_run["optimizer"] == "adam":
-            parameters_run["momentum"] = 0
-            parameters_run["weight_decay"] = 0
-
-        model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
+    #logging.getLogger("codecarbon").disabled = True
 
 
-        #We are going to use the EmissionsTracker to track the emissions
-        tracker = EmissionsTracker(
-        project_name=EXPERIMENT_NAME,
-        measure_power_secs=1,
-        tracking_mode="process",
-        output_dir=emissions_output_folder,
-        output_file="emissions.csv",
-        on_csv_write="append",
-        default_cpu_power=45,
-    )
+    #Set mlflow
+    mlflow.set_tracking_uri(TRACKING_MLFLOW)
+    try:
+        mlflow.set_experiment(EXPERIMENT_NAME)
+    except mlflow.exceptions.MlflowException as e:
+        mlflow.create_experiment(EXPERIMENT_NAME)
+        mlflow.set_experiment(EXPERIMENT_NAME)
 
-        #si pasa que hay otra proceso corriendo es porque la version es la 2.6.0
-        tracker.start()
-        model,loss_per_epoch = train(parameters_run, model, optimizer, device, loss_function)
-        tracker.stop()
+    parameters_dict = {}
+    run_ids = {}
 
-        #We save the emissions metrics to mlflow
-        emissions = pd.read_csv(emissions_output_folder / "emissions.csv")
-        emissions_metrics = emissions.iloc[-1, 4:13].to_dict()
-        #emissions_params = emissions.iloc[-1, 13:].to_dict()
-        #mlflow.log_params(emissions_params)
-        mlflow.log_metrics(emissions_metrics)
-        mlflow.set_tag("Duration units", "seconds")
-        mlflow.set_tag("Emission Units", "kg CO2")
-        mlflow.set_tag("Emission rate", "kg CO2/seg")
-        mlflow.set_tag("Power units", "watts")
-        mlflow.set_tag("Energy units", "kwh")
+    for i,combination in enumerate(hyperparameter_combinations):
+        parameters_run = dict(zip(hyperparameter_names,combination))
+
+        final_id = f"Model_{i+1}"
+
+        parameters_run["name_model"] = final_id
+
+        with mlflow.start_run(run_name=final_id) as run:
+            mlflow.log_params(parameters_run)
+
+            if parameters_run["optimizer"] == "adam":
+                parameters_run["momentum"] = 0
+                parameters_run["weight_decay"] = 0
+
+            model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
 
 
-        for i in range(len(loss_per_epoch)):
-            mlflow.log_metric("Train_loss", loss_per_epoch[i], step=i+1)
+            #We are going to use the EmissionsTracker to track the emissions
+            tracker = EmissionsTracker(
+            project_name=EXPERIMENT_NAME,
+            measure_power_secs=1,
+            tracking_mode="process",
+            output_dir=emissions_output_folder,
+            output_file="emissions.csv",
+            on_csv_write="append",
+            default_cpu_power=45,
+        )
 
-        if combination not in parameters_dict:
-            parameters_dict[final_id] = parameters_run
+            #si pasa que hay otra proceso corriendo es porque la version es la 2.6.0
+            tracker.start()
+            model,loss_per_epoch = training(parameters_run, model, optimizer, device, loss_function)
+            tracker.stop()
 
-        if combination not in run_ids:
-            run_ids[final_id] = run.info.run_id
+            #We save the emissions metrics to mlflow
+            emissions = pd.read_csv(emissions_output_folder / "emissions.csv")
+            emissions_metrics = emissions.iloc[-1, 4:13].to_dict()
+            #emissions_params = emissions.iloc[-1, 13:].to_dict()
+            #mlflow.log_params(emissions_params)
+            mlflow.log_metrics(emissions_metrics)
+            mlflow.set_tag("Duration units", "seconds")
+            mlflow.set_tag("Emission Units", "kg CO2")
+            mlflow.set_tag("Emission rate", "kg CO2/seg")
+            mlflow.set_tag("Power units", "watts")
+            mlflow.set_tag("Energy units", "kwh")
 
-        #Save the model
-        model_name = final_id + ".pkl"
-        with open(MODELS_DIR / model_name, "wb") as pickle_file:
-            pickle.dump(model, pickle_file)
 
-os.remove(emissions_output_folder / "emissions.csv")
+            for i in range(len(loss_per_epoch)):
+                mlflow.log_metric("Train_loss", loss_per_epoch[i], step=i+1)
 
-#Guarda parameters_list y run_ids en un json en la carpeta models
-with open("parameters_list.json", "w") as parameters_file:
-    json.dump(parameters_dict, parameters_file, indent=4)
+            if combination not in parameters_dict:
+                parameters_dict[final_id] = parameters_run
 
-with open("parameters_run.json", "w") as run_ids_file:
-    json.dump(run_ids, run_ids_file, indent=4)
+            if combination not in run_ids:
+                run_ids[final_id] = run.info.run_id
 
-print("Training finished")
+            #Save the model
+            model_name = final_id + ".pkl"
+            with open(MODELS_DIR / model_name, "wb") as pickle_file:
+                pickle.dump(model, pickle_file)
+
+
+    #Guarda parameters_list y run_ids en un json en la carpeta models
+    with open("parameters_list.json", "w") as parameters_file:
+        json.dump(parameters_dict, parameters_file, indent=4)
+
+    with open("parameters_run.json", "w") as run_ids_file:
+        json.dump(run_ids, run_ids_file, indent=4)
+
+    print("Training finished")
