@@ -1,0 +1,35 @@
+{
+    "Model_1": {
+        "algorithm": "VisualTransformer",
+        "model_name": "google/vit-base-patch16-224",
+        "batch_size": 16,
+        "learning_rate": 1e-05,
+        "num_epochs": 1,
+        "weight_decay": 0,
+        "momentum": 0,
+        "optimizer": "adam",
+        "name_model": "Model_1"
+    },
+    "Model_2": {
+        "algorithm": "VisualTransformer",
+        "model_name": "google/vit-base-patch16-224",
+        "batch_size": 32,
+        "learning_rate": 1e-05,
+        "num_epochs": 1,
+        "weight_decay": 0,
+        "momentum": 0,
+        "optimizer": "adam",
+        "name_model": "Model_2"
+    },
+    "Model_3": {
+        "algorithm": "VisualTransformer",
+        "model_name": "google/vit-base-patch16-224",
+        "batch_size": 8,
+        "learning_rate": 1e-05,
+        "num_epochs": 1,
+        "weight_decay": 0,
+        "momentum": 0,
+        "optimizer": "adam",
+        "name_model": "Model_3"
+    }
+}
