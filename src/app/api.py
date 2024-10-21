@@ -270,7 +270,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                         probabilities = [round(float(p), 3) for p in probabilities]
                         prediction_score = np.argmax(probabilities)
 
-                        if probabilities[prediction_score] < 0.7:
+                        if probabilities[prediction_score] < 0.85:
                             prediction = "unknown"
                         else:
                             if prediction_score == 0:
