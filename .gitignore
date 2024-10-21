@@ -174,3 +174,7 @@ Makefile
 myenv/
 parameters_list.json
 parameters_run.json
+metrics/model_processed.csv
+metrics/model_rate.csv
+metrics/model_stats_api.json
+metrics/rating_api.csv
