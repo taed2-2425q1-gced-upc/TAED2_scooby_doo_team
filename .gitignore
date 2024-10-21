@@ -172,9 +172,10 @@ cython_debug/
 Makefile
 /models
 myenv/
-parameters_list.json
-parameters_run.json
 metrics/model_processed.csv
 metrics/model_rate.csv
 metrics/model_stats_api.json
 metrics/rating_api.csv
+metrics/taed_2.pbix
+/parameters_list.json
+/parameters_run.json
