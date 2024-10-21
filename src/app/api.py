@@ -12,6 +12,7 @@ from typing import List
 import torch
 import io
 import pickle
+import csv
 import numpy as np
 from datetime import timedelta
 import zipfile
@@ -22,11 +23,18 @@ from pathlib import Path
 from datetime import datetime
 from torchinfo import summary
 
-image_counter = 0 
 class_prediction_counts = {"cat": 0, "dog": 0,"unknown":0}
 model_list = []
-api_stats = Path("metrics/api_stats.json")
 rating_models_api = Path("metrics/model_stats_api.json")
+if not rating_models_api.exists():
+    with open(rating_models_api, "w") as f:
+        json.dump({}, f)
+
+#CSVs
+rating_api = Path("metrics/rating_api.csv")
+models_procesed = Path("metrics/model_processed.csv")
+models_rate = Path("metrics/model_rate.csv")
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 
@@ -79,39 +87,79 @@ def load_ratings():
     return {}
 
 
-
-def save_ratings(ratings_dict):
+def save_ratings_json():
     """
     Save the ratings to the ratings file
     """
     with open(rating_models_api, "w") as f:
-        json.dump(ratings_dict, f, indent=4)
+        json.dump(ratings_data, f, indent=4)
 
 
 
-def load_api_stats():
+
+def save_rating_api_to_csv(rating: int):
     """
-    Load the api stats from the api stats file
+    Guardar la calificación en el archivo rating_api.csv, junto con el día, mes y año.
     """
-    if api_stats.exists():
-        with open(api_stats, "r") as f:
-            return json.load(f)
-    return {}
+    file_exists = rating_api.exists()
+
+    with open(rating_api, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        
+        if not file_exists:
+            writer.writerow(["Rating", "Day", "Month", "Year"])
+        
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        
+        writer.writerow([rating, day, month, year])
 
 
 
-def save_api_stats(api_stats_dict):
+def save_rating_models_to_csv(model_name,rating: int):
     """
-    Save the api stats to the api stats file
+    Save the rating in the file rating_models.csv, along with the day, month and year.
     """
-    with open(api_stats, "w") as f:
-        json.dump(api_stats_dict, f, indent=4)
+    file_exists = models_rate.exists()
+
+    with open(models_rate, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        
+        if not file_exists:
+            writer.writerow(["Model_name","Rating", "Day", "Month", "Year"])
+        
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        
+        writer.writerow([model_name,rating, day, month, year])
 
 
+
+def save_processed_images_to_csv(model_name, count: int):
+    """
+    Save the number of processed images in the file model_processed.csv, along with the day, month and year.
+    """
+    file_exists = models_procesed.exists()
+
+    with open(models_procesed, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        
+        if not file_exists:
+            writer.writerow(["Model_name","Processed_images", "Day", "Month", "Year"])
+        
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        
+        writer.writerow([model_name,count, day, month, year])
 
 
 ratings_data = load_ratings()
-api_stats_data = load_api_stats()
 
 
 @asynccontextmanager
@@ -191,13 +239,13 @@ async def predict_image(model_name: str,files: List[UploadFile]):
     '''
     Classifies an image using one of our trained models.
 
-    @param model_type: the model to use for classification
+    @param model_type: the model to use for classification. The structure of the model name is "Model_<model_number>"
     @param file: image or zip to be classified, expected formats are  jpeg, png, gif and webp.
     @returns: classifiction of the image in the format {"class":"dog"} or {"class":"cat"}
     '''
-    global image_counter
     global class_prediction_counts
     results = []
+    count = 0
 
     model_idx = int(model_name.split("_")[-1]) - 1
     if model_idx >= len(model_list):
@@ -212,14 +260,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
             with zipfile.ZipFile(io.BytesIO(await file.read())) as zip_file:
                 for zip_info in zip_file.infolist():
                     if zip_info.filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-                        if model_name not in ratings_data:
-                            ratings_data[model_name] = {}
-                        if "image_processed" not in ratings_data[model_name]:
-                            ratings_data[model_name]["image_processed"] = []
-                        if "date_image_processed" not in ratings_data[model_name]:
-                            ratings_data[model_name]["date_image_processed"] = []
-                        ratings_data[model_name]["date_image_processed"].append(str(datetime.now()))
-                        ratings_data[model_name]["image_processed"].append(1)
+                        count += 1
                         image_bytes = zip_file.read(zip_info.filename)
                         image_tensor = image_to_tensor(image_bytes)
                         
@@ -252,8 +293,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                             "prediction_counts": class_prediction_counts
                         })
 
-                        image_counter += 1
-                        save_ratings(ratings_data)
 
         else:
             if not allowed_file_format(file):
@@ -263,14 +302,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                     "status_code": HTTPStatus.BAD_REQUEST
                 })
                 continue
-            if model_name not in ratings_data:
-                ratings_data[model_name] = {}
-            if "image_processed" not in ratings_data[model_name]:
-                ratings_data[model_name]["image_processed"] = []
-            if "date_image_processed" not in ratings_data[model_name]:
-                ratings_data[model_name]["date_image_processed"] = []
-            ratings_data[model_name]["date_image_processed"].append(str(datetime.now()))
-            ratings_data[model_name]["image_processed"].append(1)
+            count += 1
             image_bytes = await file.read()
             image_tensor = image_to_tensor(image_bytes)
             await file.close()
@@ -300,9 +332,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                 },
                 "prediction_counts": class_prediction_counts
             })
-            image_counter += 1
-            save_ratings(ratings_data)
-
+    save_processed_images_to_csv(model_name,count)
     return {"message": "Detailed predictions for all images", "results": results}
 
 
@@ -310,6 +340,12 @@ async def predict_image(model_name: str,files: List[UploadFile]):
 
 @app.get("/model-summary",tags=["Models"])
 async def model_stats(Model_name: str):
+   """
+   Get the summary of the model
+
+    @param Model_name: the name of the model to get the summary. The structure of the model name is "Model_<model_number>"
+    @returns: the summary of the model
+   """
    global model_list
    
    model_idx = int(Model_name.split("_")[-1]) - 1
@@ -344,6 +380,12 @@ async def model_stats(Model_name: str):
 
 @app.get("/health",tags=["Models"])
 async def health_check(Model_name: str):
+    """
+    Check the health of the API and the model
+
+    @param Model_name: the name of the model to check. The structure of the model name is "Model_<model_number>"
+    @returns: the status of the API and the model
+    """
     global model_list
     model_idx = int(Model_name.split("_")[-1]) - 1
     if model_idx >= len(model_list):
@@ -365,36 +407,59 @@ async def health_check(Model_name: str):
     
 
 
-@app.post("/models/{model_name}/rate", tags=["Rate models and API"])
+@app.post("/models/rate", tags=["Rate models and API"])
 def rate_model(model_name: str, rating: int):
     """
-    Allow the user to rate a model from 1 to 5
+    Allow the user to rate a model from 1 to 5.
+
+    @param model_name: the name of the model to rate. The structure of the model name is "Model_<model_number>"
+    @param rating: the rating to assign to the model. It must be an integer between 1 and 5
+    @returns: a message indicating if the rating was added successfully
     """
     if rating < 1 or rating > 5:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
+    idx = int(model_name.split("_")[-1]) - 1
+    if idx >= len(model_list):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Model not found. Please check the model name and try again.",
+        )
     
-    #If the model is new, add it to the ratings data
     if model_name not in ratings_data:
         ratings_data[model_name] = {}
     if "ratings" not in ratings_data[model_name]:
         ratings_data[model_name]["ratings"] = []
     if "average_rating" not in ratings_data[model_name]:
         ratings_data[model_name]["average_rating"] = 0
-
+    print(ratings_data)
     ratings_data[model_name]["ratings"].append(rating)
+    if len(ratings_data[model_name]["ratings"]) > 30:
+        ratings_data[model_name]["ratings"].pop(0)
     ratings_data[model_name]["average_rating"] = round(sum(ratings_data[model_name]["ratings"]) / len(ratings_data[model_name]["ratings"]), 2)
-    save_ratings(ratings_data)
+
+    save_ratings_json()
+    save_rating_models_to_csv(model_name,rating)
+
     return {"message": "Rating added successfully"}
 
 
 
-@app.get("/models/{model_name}/rating", tags=["Models"])
+@app.get("/models/rating", tags=["Models"])
 def get_model_rating(model_name: str):
     """
     Get the average rating of a specific model
+
+    @param model_name: the name of the model to get the rating. The structure of the model name is "Model_<model_number>"
+    @returns: the average rating of the model of the last 30 ratings
     """
+    idx = int(model_name.split("_")[-1]) - 1
+    if idx >= len(model_list):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Model not found. Please check the model name and try again.",
+        )
     if model_name not in ratings_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Model not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Model not rated yet")
 
     return {
         "model_name": model_name,
@@ -406,140 +471,13 @@ def get_model_rating(model_name: str):
 @app.post("/rate_api", tags=["Rate models and API"])
 def rate_api(rating: int):
     """
-    Allow the user to rate the API from 1 to 5
+    Allows the user to rate the API from 1 to 5.
+
+    @param rating: la calificación a asignar a la API. Debe ser un entero entre 1 y 5.
     """
+
     if rating < 1 or rating > 5:
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
+    save_rating_api_to_csv(rating)
 
-    if "api_ratings" not in api_stats_data:
-        api_stats_data["api_ratings"] = {"ratings": [], "average_rating": 0}
-    if "date" not in api_stats_data:
-        api_stats_data["date"] = []
-
-    api_stats_data["api_ratings"]["ratings"].append(rating)
-    api_stats_data["api_ratings"]["average_rating"] = round(sum(api_stats_data["api_ratings"]["ratings"]) / len(api_stats_data["api_ratings"]["ratings"]), 2)
-    api_stats_data["date"].append(str(datetime.now()))
-    save_api_stats(api_stats_data)
     return {"message": "Rating added successfully"}
-
-
-
-
-
-@app.get("/models_image_processed_vis", tags=["Visualization"])
-def image_processed_per_model():
-    """
-    Endpoint to generate a line chart showing the number of images processed by each model per day for the current month.
-    Each model will have its own line in the chart.
-    """
-    if not ratings_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No data found for the models")
-    
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-
-    last_day_of_month = (datetime(current_year, current_month + 1, 1) - timedelta(days=1)).day
-    all_days_of_month = [datetime(current_year, current_month, day).date() for day in range(1, last_day_of_month + 1)]
-
-    images_processed_per_model = {model_name: {day: 0 for day in all_days_of_month} for model_name in ratings_data.keys()}
-
-    for model_name, model_data in ratings_data.items():
-        if "date_image_processed" in model_data and "image_processed" in model_data:
-            dates = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f').date() for date in model_data["date_image_processed"]]
-            image_processed = model_data["image_processed"]
-
-            # We filter the data to only include the current month and year
-            current_month_dates = [date for date in dates if date.month == current_month and date.year == current_year]
-            current_month_image_processed = [image_processed[i] for i in range(len(dates)) if dates[i].month == current_month and dates[i].year == current_year]
-
-            for i, day in enumerate(current_month_dates):
-                images_processed_per_model[model_name][day] += current_month_image_processed[i]
-
-    plt.figure(figsize=(10, 5))
-
-    for model_name, daily_data in images_processed_per_model.items():
-        plt.plot(all_days_of_month, [daily_data.get(day, 0) for day in all_days_of_month], marker='o', linestyle='-', label=model_name)
-
-    plt.title(f'Images Processed per Model for {datetime.now().strftime("%B %Y")}')
-    plt.xlabel('Date')
-    plt.ylabel('Images Processed')
-    plt.legend(title="Models")
-    plt.grid(True)
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    plt.close()
-
-    return StreamingResponse(buf, media_type="image/png")
-
-
-
-
-
-@app.get("/api_rating_vis", tags=["Visualization"])
-def api_rate_actual_month():
-    """
-    Endpoint to generate a line chart showing the average rating of the API for the current month
-    """
-    if "api_ratings" not in api_stats_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No ratings found for the API")
-    
-    if "date" not in api_stats_data or "api_ratings" not in api_stats_data:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No API rating data available")
-
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-
-    last_day_of_month = (datetime(current_year, current_month + 1, 1) - timedelta(days=1)).day
-    all_days_of_month = [datetime(current_year, current_month, day).date() for day in range(1, last_day_of_month + 1)]
-
-    dates = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f').date() for date in api_stats_data["date"]]
-    ratings = api_stats_data["api_ratings"]["ratings"]
-
-    if not dates or not ratings:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Insufficient data for plotting")
-
-    # We filter the data to only include the current month and year
-    current_month_dates = [date for date in dates if date.month == current_month and date.year == current_year]
-    current_month_ratings = [ratings[i] for i in range(len(dates)) if dates[i].month == current_month and dates[i].year == current_year]
-
-    if not current_month_dates or not current_month_ratings:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No ratings for the current month")
-
-    # We group the ratings by day
-    daily_ratings = {}
-    for i, day in enumerate(current_month_dates):
-        if day not in daily_ratings:
-            daily_ratings[day] = []
-        daily_ratings[day].append(current_month_ratings[i])
-
-    avg_rating_per_day = {day: np.mean(daily_ratings[day]) for day in daily_ratings}
-
-    # We create a list of cumulative average ratings
-    cumulative_average_ratings = []
-    running_sum = 0
-    count = 0
-    for day in all_days_of_month:
-        if day in avg_rating_per_day:
-            running_sum += avg_rating_per_day[day]
-            count += 1
-        if count > 0:
-            cumulative_average_ratings.append(running_sum / count)
-        else:
-            cumulative_average_ratings.append(0) 
-
-    plt.figure(figsize=(10, 5))
-    plt.plot(all_days_of_month, cumulative_average_ratings, marker='o', linestyle='-', color='b')
-    plt.title(f'Cumulative Average API Rating for {datetime.now().strftime("%B %Y")}')
-    plt.xlabel('Date')
-    plt.ylabel('Cumulative Average Rating')
-    plt.ylim(1, 5)
-    plt.grid(True)
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    plt.close()
-
-    return StreamingResponse(buf, media_type="image/png")
-
