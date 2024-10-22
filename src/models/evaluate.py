@@ -9,15 +9,12 @@ import json
 import pickle
 import mlflow
 import torch
-import torch.nn as nn
-import torch.utils.data as data
-import pandas as pd
+from torch.utils import data
 from PIL import Image
 from torchvision import transforms
 
 
-from src.config import METRICS_DIR, PROCESSED_DATA_DIR, \
-    PROCESSED_VALID_IMAGES, TRACKING_MLFLOW,EXPERIMENT_NAME
+from src.config import METRICS_DIR, PROCESSED_VALID_IMAGES, TRACKING_MLFLOW,EXPERIMENT_NAME
 
 # Path to the models folder
 MODELS_FOLDER_PATH = Path("models")
@@ -79,7 +76,7 @@ def preapare_validation_dataloaders(
 
 
 
-def evaluate_model(model,batch_size: int) -> float:
+def evaluate_model(model_evaluate,batch_size: int) -> float:
     """
     Evaluate the model using the validation data.
     """
@@ -90,33 +87,30 @@ def evaluate_model(model,batch_size: int) -> float:
                     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-    model.eval()
+    model_evaluate.to(device)
+    model_evaluate.eval()
     correct = 0
     total = 0
     with torch.no_grad():
-        for i, (x, y) in enumerate(valid_dataloader):
+        for (x, y) in enumerate(valid_dataloader):
             x = x.to(device)
             y = y.to(device)
-            outputs = model(x)
+            outputs = model_evaluate(x)
             predicted = torch.argmax(outputs.logits, dim=1)
             y = y.squeeze()
             total += y.size(0)
             correct += (predicted == y).sum().item()
-    accuracy = (correct / total)*100
-    print(f"Accuracy: {accuracy:.2f}%")
-    return accuracy
+    accuracy_eval = (correct / total)*100
+    print(f"Accuracy: {accuracy_eval :.2f}%")
+    return accuracy_eval
 
 
-"""
-Main function for the validation process
-"""
 if __name__ == "__main__": # pragma: no cover
     #Load the parameters and run_ids from training script
-    with open("parameters_list.json", "r") as parameters_run_file:
+    with open("parameters_list.json", "r", encoding="utf-8") as parameters_run_file:
         parameters_run = json.load(parameters_run_file)
 
-    with open("parameters_run.json", "r") as run_ids_file:
+    with open("parameters_run.json", "r", encoding="utf-8") as run_ids_file:
         run_ids = json.load(run_ids_file)
 
     Path("metrics").mkdir(exist_ok=True)
@@ -126,9 +120,9 @@ if __name__ == "__main__": # pragma: no cover
     mlflow.set_tracking_uri(TRACKING_MLFLOW)
     mlflow.set_experiment(EXPERIMENT_NAME)
 
-    best_model = None
-    best_accuracy = 0
-
+    BEST_MODEL = None
+    BEST_ACCURACY = 0
+    BEST_RUN_ID = None
     metric_to_save = {}
 
     #Validation for each model
@@ -151,16 +145,19 @@ if __name__ == "__main__": # pragma: no cover
             metric_to_save[combination] = info
 
         #To select the best model we focus on the accuracy
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
-            best_model = combination
-            best_run_id = run.info.run_id
+        if accuracy > BEST_ACCURACY:
+            BEST_ACCURACY = accuracy
+            BEST_MODEL = combination
+            BEST_RUN_ID = run.info.run_id
 
-    #Add the best model tag to the mlflow
-    with mlflow.start_run(run_id=best_run_id):  
-        mlflow.set_tag("Best_model", "True")
+    if BEST_RUN_ID is not None:
+        #Add the best model tag to the mlflow
+        with mlflow.start_run(run_id=BEST_RUN_ID):
+            mlflow.set_tag("Best_model", "True")
+    else:
+        print("No model met the accuracy criteria.")
 
-    with open(metrics_folder_path / "scores.json", "w") as scores_file:
+    with open(metrics_folder_path / "scores.json", "w", encoding="utf-8") as scores_file:
         json.dump(
             metric_to_save,
             scores_file,

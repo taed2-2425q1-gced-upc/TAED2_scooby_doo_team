@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, Depends, File
 from fastapi.responses import HTMLResponse
 from torchvision import transforms
 from contextlib import asynccontextmanager
@@ -10,17 +10,16 @@ from PIL import Image
 from src.config import MODELS_DIR
 from typing import List
 import torch
-import io
 import pickle
 import numpy as np
 from datetime import timedelta
 import zipfile
-from typing import Union
-import os
 import json
 from pathlib import Path
 from datetime import datetime
 from torchinfo import summary
+from src.app.schemas import ImagePredictionPayload, AnimalType
+
 
 image_counter = 0 
 class_prediction_counts = {"cat": 0, "dog": 0,"unknown":0}
@@ -28,8 +27,6 @@ model_list = []
 api_stats = Path("metrics/api_stats.json")
 rating_models_api = Path("metrics/model_stats_api.json")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-
-
 
 
 def allowed_file_format(file: UploadFile):
@@ -187,7 +184,7 @@ def _get_models_list():
 
 
 @app.post("/predict",tags=["Prediction"])
-async def predict_image(model_name: str,files: List[UploadFile]):
+async def predict_image(payload: ImagePredictionPayload = Depends(),  files: List[UploadFile] = File(...)):
     '''
     Classifies an image using one of our trained models.
 
@@ -199,6 +196,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
     global class_prediction_counts
     results = []
 
+    model_name = payload.model_name
     model_idx = int(model_name.split("_")[-1]) - 1
     if model_idx >= len(model_list):
         raise HTTPException(
@@ -230,24 +228,25 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                         prediction_score = np.argmax(probabilities)
 
                         if probabilities[prediction_score] < 0.85:
-                            prediction = "unknown"
+                            prediction = AnimalType.UNKNOWN.name
                         else:
-                            if prediction_score == 0:
-                                prediction = "cat"
+                            if prediction_score == AnimalType.CAT.value:
+                                prediction = AnimalType.CAT.name
                             else: 
-                                prediction = "dog"
+                                prediction = AnimalType.DOG.name
 
                         class_prediction_counts[prediction] += 1
 
                         # Añadir los resultados para cada imagen en el ZIP
                         results.append({
+                            "model_name": model_name,
                             "filename": zip_info.filename,
                             "message": HTTPStatus.OK.phrase,
                             "status-code": HTTPStatus.OK,
                             "class": prediction,
                             "probabilities": {
-                                "cat": probabilities[0],
-                                "dog": probabilities[1]
+                                AnimalType.CAT.name: probabilities[AnimalType.CAT.value],
+                                AnimalType.DOG.name: probabilities[AnimalType.DOG.value],
                             },
                             "prediction_counts": class_prediction_counts
                         })
@@ -280,23 +279,24 @@ async def predict_image(model_name: str,files: List[UploadFile]):
             probabilities = [round(float(p), 3) for p in probabilities]
             prediction_score = np.argmax(probabilities)
             if probabilities[prediction_score] < 0.85:
-                prediction = "unknown"
+                prediction = AnimalType.UNKNOWN.name 
             else:
-                if prediction_score == 0:
-                    prediction = "cat"
+                if prediction_score == AnimalType.CAT.value:
+                    prediction = AnimalType.CAT.name
                 else: 
-                    prediction = "dog"
+                    prediction = AnimalType.DOG.name 
 
             class_prediction_counts[prediction] += 1
 
             results.append({
+                "model_name": model_name,
                 "filename": file.filename,
                 "message":HTTPStatus.OK.phrase,
                 "status-code":HTTPStatus.OK,
                 "class":prediction,
                 "probabilities": {
-                    "cat": probabilities[0],
-                    "dog": probabilities[1]
+                    AnimalType.CAT.name: probabilities[AnimalType.CAT.value],
+                    AnimalType.DOG.name: probabilities[AnimalType.DOG.value],
                 },
                 "prediction_counts": class_prediction_counts
             })
@@ -371,7 +371,8 @@ def rate_model(model_name: str, rating: int):
     Allow the user to rate a model from 1 to 5
     """
     if rating < 1 or rating > 5:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, 
+                            detail="Rating must be between 1 and 5")
     
     #If the model is new, add it to the ratings data
     if model_name not in ratings_data:
@@ -409,7 +410,8 @@ def rate_api(rating: int):
     Allow the user to rate the API from 1 to 5
     """
     if rating < 1 or rating > 5:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, 
+                            detail="Rating must be between 1 and 5")
 
     if "api_ratings" not in api_stats_data:
         api_stats_data["api_ratings"] = {"ratings": [], "average_rating": 0}
@@ -433,7 +435,8 @@ def image_processed_per_model():
     Each model will have its own line in the chart.
     """
     if not ratings_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No data found for the models")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, 
+                            detail="No data found for the models")
     
     current_month = datetime.now().month
     current_year = datetime.now().year
@@ -441,16 +444,20 @@ def image_processed_per_model():
     last_day_of_month = (datetime(current_year, current_month + 1, 1) - timedelta(days=1)).day
     all_days_of_month = [datetime(current_year, current_month, day).date() for day in range(1, last_day_of_month + 1)]
 
-    images_processed_per_model = {model_name: {day: 0 for day in all_days_of_month} for model_name in ratings_data.keys()}
+    images_processed_per_model = {model_name: {day: 0 for day in all_days_of_month} 
+                                  for model_name in ratings_data.keys()}
 
     for model_name, model_data in ratings_data.items():
         if "date_image_processed" in model_data and "image_processed" in model_data:
-            dates = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f').date() for date in model_data["date_image_processed"]]
+            dates = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f').date() 
+                     for date in model_data["date_image_processed"]]
             image_processed = model_data["image_processed"]
 
             # We filter the data to only include the current month and year
             current_month_dates = [date for date in dates if date.month == current_month and date.year == current_year]
-            current_month_image_processed = [image_processed[i] for i in range(len(dates)) if dates[i].month == current_month and dates[i].year == current_year]
+            current_month_image_processed = [image_processed[i] for i in range(len(dates)) 
+                                             if dates[i].month == current_month and 
+                                             dates[i].year == current_year]
 
             for i, day in enumerate(current_month_dates):
                 images_processed_per_model[model_name][day] += current_month_image_processed[i]
@@ -458,7 +465,9 @@ def image_processed_per_model():
     plt.figure(figsize=(10, 5))
 
     for model_name, daily_data in images_processed_per_model.items():
-        plt.plot(all_days_of_month, [daily_data.get(day, 0) for day in all_days_of_month], marker='o', linestyle='-', label=model_name)
+        plt.plot(all_days_of_month, [daily_data.get(day, 0) for day in 
+                                     all_days_of_month], marker='o', linestyle='-', 
+                                     label=model_name)
 
     plt.title(f'Images Processed per Model for {datetime.now().strftime("%B %Y")}')
     plt.xlabel('Date')
@@ -482,10 +491,12 @@ def api_rate_actual_month():
     Endpoint to generate a line chart showing the average rating of the API for the current month
     """
     if "api_ratings" not in api_stats_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No ratings found for the API")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, 
+                            detail="No ratings found for the API")
     
     if "date" not in api_stats_data or "api_ratings" not in api_stats_data:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No API rating data available")
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, 
+                            detail="No API rating data available")
 
     current_month = datetime.now().month
     current_year = datetime.now().year
@@ -497,14 +508,17 @@ def api_rate_actual_month():
     ratings = api_stats_data["api_ratings"]["ratings"]
 
     if not dates or not ratings:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Insufficient data for plotting")
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, 
+                            detail="Insufficient data for plotting")
 
     # We filter the data to only include the current month and year
     current_month_dates = [date for date in dates if date.month == current_month and date.year == current_year]
-    current_month_ratings = [ratings[i] for i in range(len(dates)) if dates[i].month == current_month and dates[i].year == current_year]
+    current_month_ratings = [ratings[i] for i in range(len(dates)) 
+                             if dates[i].month == current_month and dates[i].year == current_year]
 
     if not current_month_dates or not current_month_ratings:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No ratings for the current month")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, 
+                            detail="No ratings for the current month")
 
     # We group the ratings by day
     daily_ratings = {}

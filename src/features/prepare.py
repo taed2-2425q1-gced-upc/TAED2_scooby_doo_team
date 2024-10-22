@@ -68,7 +68,7 @@ def split_data(dataframe, parameters):
         test_size=1 - parameters["valid_size"],
         random_state=parameters["random_state"],
     )
-    return x_train, x_valid, x_test, y_train, y_valid, y_test
+    return (x_train, x_valid, x_test), (y_train, y_valid, y_test)
 
 
 
@@ -96,9 +96,12 @@ def save_images(dataframe,labels, prepared_images_path, prefix):
 
 
 
-def save_data(x_train, y_train, x_valid, y_valid, x_test, y_test):
+def save_data(train_data_s, valid_data_s, test_data_s):
     """Guarda los conjuntos de datos en archivos CSV."""
     Path(PROCESSED_DATA_DIR).mkdir(exist_ok=True)
+    x_train, y_train = train_data_s
+    x_valid, y_valid = valid_data_s
+    x_test, y_test = test_data_s
 
     x_train.to_csv(PROCESSED_DATA_DIR / "X_train.csv", index=False)
     y_train.to_csv(PROCESSED_DATA_DIR / "y_train.csv", index=False)
@@ -115,8 +118,6 @@ def save_data(x_train, y_train, x_valid, y_valid, x_test, y_test):
     print("Data saved successfully.")
 
 
-
-"""Función principal"""
 if __name__ == "__main__": # pragma: no cover
     params_path = Path("params.yaml")
 
@@ -124,7 +125,9 @@ if __name__ == "__main__": # pragma: no cover
     params = load_params(params_path,"prepare")
 
     if params:
-        x_train_data, x_valid_data, x_test_data, y_train_data, y_valid_data, y_test_data = split_data(df, params)
-        save_data(x_train_data, y_train_data, x_valid_data,
-                y_valid_data, x_test_data, y_test_data
-                )
+        (x_train_data, x_valid_data, x_test_data), \
+        (y_train_data, y_valid_data, y_test_data) = split_data(df, params)
+        train_data = x_train_data, y_train_data
+        valid_data = x_valid_data, y_valid_data
+        test_data = x_test_data, y_test_data
+        save_data(train_data, valid_data, test_data)

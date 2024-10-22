@@ -10,7 +10,6 @@ import pickle
 import json
 import random
 import itertools
-import yaml
 import mlflow
 
 import pandas as pd
@@ -44,17 +43,18 @@ def combine_hyperparameters(values: tuple[tuple[Any]], number_of_combinations: i
 
 
 
-def get_model(algorithm: str, model_name: str, targets: list[str]) -> Any:
+def get_model(algorithm: str, model_name_get: str, targets_list: list[str]) -> Any:
     """
     Creates and returns a model based on the specified algorithm and model name
     """
 
     if algorithm == 'VisualTransformer':
         return ViTForImageClassification.from_pretrained(
-            model_name,
-            num_labels=len(targets),
+            model_name_get,
+            num_labels=len(targets_list),
             ignore_mismatched_sizes=True
         )
+    return None
 
 
 
@@ -64,39 +64,42 @@ def get_optimizer(
         learning_rate: float,
         weight_decay: float,
         momentum: float,
-        model: Any
+        model_opt: Any
     ) -> Any:
     """
     Creates and returns an optimizer for the given model based on the specified algorithm
     """
 
     if algorithm == 'adam':
-        return torch.optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
-    elif algorithm == 'sgd':
+        return torch.optim.Adam(model_opt.parameters(), lr=learning_rate,weight_decay=weight_decay)
+
+    if algorithm == 'sgd':
         return torch.optim.SGD(
-                model.parameters(),
+                model_opt.parameters(),
                 lr=learning_rate,
                 weight_decay=weight_decay,
                 momentum=momentum
             )
 
+    return None
+
 
 
 def prepare_hyperparameters_combinations(
-        parameters: dict[str,Any]
+        parameters_comb: dict[str,Any]
     ) -> tuple[dict[str,Any], list[str]]:
     """
     Get the possible combination of hyperparameters and the names of those hyperparameters
     """
 
-    hyperparameter_names = parameters["hyperparameters"].keys()
-    values = parameters['hyperparameters'].values()
-    hyperparameter_combinations = combine_hyperparameters(
+    hyperparams_names = parameters_comb["hyperparameters"].keys()
+    values = parameters_comb['hyperparameters'].values()
+    hyperparameter_combs = combine_hyperparameters(
                                     values=values,
-                                    number_of_combinations = parameters['combinations']
+                                    number_of_combinations = parameters_comb['combinations']
                                 )
 
-    return  hyperparameter_combinations, hyperparameter_names
+    return  hyperparameter_combs, hyperparams_names
 
 
 
@@ -154,73 +157,75 @@ def preapare_train_dataloaders(
 
 
 
-def prepare_training_objects(targets,parameters_run: dict[str,Any]):
+def prepare_training_objects(targets_train,parameters_run_train: dict[str,Any]):
     """
     Prepares the training objects, including the model, optimizer, device, loss function, 
     and feature extractor based on the provided parameters
     """
 
-    model = get_model(parameters_run['algorithm'],parameters_run['model_name'],targets)
-    optimizer = get_optimizer(
-                    parameters_run['optimizer'],
-                    parameters_run['learning_rate'],
-                    parameters_run['weight_decay'],
-                    parameters_run['momentum'],
-                    model
+    training_model = get_model(parameters_run_train['algorithm'],
+                               parameters_run_train['model_name'],targets_train)
+    training_optimizer = get_optimizer(
+                    parameters_run_train['optimizer'],
+                    parameters_run_train['learning_rate'],
+                    parameters_run_train['weight_decay'],
+                    parameters_run_train['momentum'],
+                    training_model
                 )
-    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    loss_function = nn.CrossEntropyLoss()
+    training_device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    loss_function_training = nn.CrossEntropyLoss()
 
-    return model, optimizer, device, loss_function
+    return training_model, training_optimizer, training_device, loss_function_training
 
 
 
 
 def training(
-        parameters_run: dict[str, Any],
-        model: Any,
-        optimizer: Any,
-        device: Any,
-        loss_function: Any
+        train_parameters_run: dict[str, Any],
+        model_train: Any,
+        optimizer_train: Any,
+        device_train: Any,
+        loss_function_train: Any
     ) -> None:
     """
     Trains a model for a specified number of epochs.
     """
     train_dataloader = preapare_train_dataloaders(
                         PROCESSED_TRAIN_IMAGES,
-                        parameters_run["batch_size"]
+                        train_parameters_run["batch_size"]
                     )
 
-    model.to(device)
-    model.train()
-    loss_per_step = []
-    loss_per_epoch = []
-    for epoch in range(parameters_run["num_epochs"]):
+    training_stats = {
+        'loss_per_epoch': [],
+        'loss_per_step': []
+    }
+    model_train.to(device_train)
+    model_train.train()
+    for epoch in range(train_parameters_run["num_epochs"]):
         print(f"Epoch {epoch+1}")
-        total_training_loss = 0
+        epoch_loss = 0
         for step, (x, y) in enumerate(train_dataloader):
             print(f"Step {step+1} and len of batch {len(x)}")
-            optimizer.zero_grad()
-            x, y  = x.to(device), y.to(device)
-            y = y.squeeze()
-            output = model(x).logits
-            loss = loss_function(output,y)
+            optimizer_train.zero_grad()
+            x, y  = x.to(device_train), y.to(device_train).squeeze()
+
+            output = model_train(x).logits
+            loss = loss_function_train(output,y)
             loss.backward()
-            optimizer.step()
-            total_training_loss += loss.item()
-            loss_per_step.append(loss.item())
-        loss_per_epoch.append(sum(loss_per_step)/len(loss_per_step))
-        print(f"Epoch {epoch+1}/{parameters_run['num_epochs']}, \
-             Average Training Loss: {total_training_loss / (step + 1)}")
+            optimizer_train.step()
 
-    return model,loss_per_epoch
+            epoch_loss += loss.item()
+            training_stats['loss_per_step'].append(loss.item())
+
+            avg_loss = epoch_loss / (step + 1)
+        training_stats['loss_per_epoch'].append(avg_loss)
+
+        print(f"Epoch {epoch+1}/{train_parameters_run['num_epochs']}, \
+             Average Training Loss: {avg_loss:.4f}")
+
+    return model_train, training_stats['loss_per_epoch']
 
 
-
-
-"""
-Main function for the training process
-"""
 if __name__ == "__main__": # pragma: no cover
     rating_models_api = Path("metrics/model_stats_api.json")
     #We remove the file if it exists because we are going to create new models
@@ -232,7 +237,9 @@ if __name__ == "__main__": # pragma: no cover
     emissions_output_folder = METRICS_DIR
 
     #Hyperparameters that we are going to use for the training
-    hyperparameter_combinations, hyperparameter_names = prepare_hyperparameters_combinations(parameters)
+    hyperparameter_combinations, hyperparameter_names = (
+        prepare_hyperparameters_combinations(parameters)
+    )
 
     targets = parameters['targets']
 
@@ -267,7 +274,9 @@ if __name__ == "__main__": # pragma: no cover
                 parameters_run["momentum"] = 0
                 parameters_run["weight_decay"] = 0
 
-            model, optimizer, device, loss_function = prepare_training_objects(targets,parameters_run)
+            model, optimizer, device, loss_function = (
+                prepare_training_objects(targets,parameters_run)
+            )
 
 
             #We are going to use the EmissionsTracker to track the emissions
@@ -299,7 +308,7 @@ if __name__ == "__main__": # pragma: no cover
             mlflow.set_tag("Energy units", "kwh")
 
 
-            for i in range(len(loss_per_epoch)):
+            for i in enumerate(loss_per_epoch):
                 mlflow.log_metric("Train_loss", loss_per_epoch[i], step=i+1)
 
             if combination not in parameters_dict:
@@ -315,10 +324,10 @@ if __name__ == "__main__": # pragma: no cover
 
 
     #Guarda parameters_list y run_ids en un json en la carpeta models
-    with open("parameters_list.json", "w") as parameters_file:
+    with open("parameters_list.json", "w", encoding="utf-8") as parameters_file:
         json.dump(parameters_dict, parameters_file, indent=4)
 
-    with open("parameters_run.json", "w") as run_ids_file:
+    with open("parameters_run.json", "w", encoding="utf-8") as run_ids_file:
         json.dump(run_ids, run_ids_file, indent=4)
 
     print("Training finished")

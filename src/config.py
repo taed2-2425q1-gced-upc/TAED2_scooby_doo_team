@@ -1,5 +1,16 @@
-from pathlib import Path
+"""
+config.py
 
+This module contains configuration settings for the project, including
+global variables and configurations that are utilized across different
+parts of the system.
+
+Configuration settings may include:
+- Data paths
+- Model parameters
+- Network settings
+"""
+from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
