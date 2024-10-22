@@ -26,6 +26,7 @@ uvicorn = {extras = ["standard"], version = "^0.31.1"}
 python-multipart = "^0.0.12"
 torchsummary = "^1.5.1"
 torchinfo = "^1.8.0"
+pydantic = "^1.8.2"
 
 
 [tool.poetry.group.dev.dependencies]

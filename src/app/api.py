@@ -234,7 +234,7 @@ def _get_models_list():
 
 
 
-@app.post("/predict",tags=["Prediction"])
+@app.post("/predict/{model_name}",tags=["Prediction"])
 async def predict_image(model_name: str,files: List[UploadFile]):
     '''
     Classifies an image using one of our trained models.
@@ -256,7 +256,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
     model = model_list[model_idx]
     for file in files:
         if file.filename.endswith('.zip'):
-            # Extraer el contenido del ZIP
             with zipfile.ZipFile(io.BytesIO(await file.read())) as zip_file:
                 for zip_info in zip_file.infolist():
                     if zip_info.filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
@@ -264,7 +263,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                         image_bytes = zip_file.read(zip_info.filename)
                         image_tensor = image_to_tensor(image_bytes)
                         
-                        # Realizar la predicción para cada imagen dentro del ZIP
                         logits = model(image_tensor).logits.detach()[0]
                         probabilities = torch.softmax(logits, dim=0).numpy()
                         probabilities = [round(float(p), 3) for p in probabilities]
@@ -280,7 +278,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
 
                         class_prediction_counts[prediction] += 1
 
-                        # Añadir los resultados para cada imagen en el ZIP
                         results.append({
                             "filename": zip_info.filename,
                             "message": HTTPStatus.OK.phrase,
@@ -407,7 +404,7 @@ async def health_check(Model_name: str):
     
 
 
-@app.post("/models/rate", tags=["Rate models and API"])
+@app.post("/models/rate/{model_name}", tags=["Rate models and API"])
 def rate_model(model_name: str, rating: int):
     """
     Allow the user to rate a model from 1 to 5.
@@ -444,7 +441,7 @@ def rate_model(model_name: str, rating: int):
 
 
 
-@app.get("/models/rating", tags=["Models"])
+@app.get("/models/rating/{model_name}", tags=["Models"])
 def get_model_rating(model_name: str):
     """
     Get the average rating of a specific model
