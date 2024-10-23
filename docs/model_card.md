@@ -45,7 +45,7 @@ The uses can be found following:
 
 The model is intended for direct image classification tasks, where an image is fed to the model, and it outputs the prediction—either "cat" or "dog." It can be used for quick and reliable inference in scenarios where images contain only one of the two animals.
 
-### Downstream Use [optional]
+### Downstream Use 
 
 The model can be adapted for use in various real-world applications, such as sorting or labeling images in pet-related services, or as part of an automated system in animal shelters. Further fine-tuning might be necessary for tasks that involve a broader range of animals or specific use cases like image captioning.
 
@@ -123,7 +123,7 @@ As there is no specific requirements on any class higher recognition. `accuracy`
 
 ### Results
 
-The accuracy score achieved during the evaluation was `-`, reflecting the model's performance in classifying images of dogs and cats.
+The accuracy score achieved during the evaluation was `98.56`, reflecting the model's performance in classifying images of dogs and cats.
 
 #### Summary
 
