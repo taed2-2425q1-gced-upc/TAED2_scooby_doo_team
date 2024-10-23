@@ -33,17 +33,3 @@ class AnimalType(Enum):
     UNKNOWN = 2   # In case the model does the classification 
                 # of an image that does not cointain a cat nor a dog
 
-class MultiImagePredictionPayload(BaseModel):
-    """
-    Pydantic class to support multiple image uploads for prediction, along with the model name.
-    """
-
-    model_name: str
-    images: List[UploadFile] = File(...)
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "model_name": "cat-dog-classifier",
-            }
-        }

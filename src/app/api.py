@@ -22,7 +22,7 @@ from src.app.schemas import ImagePredictionPayload, AnimalType
 
 
 image_counter = 0 
-class_prediction_counts = {"cat": 0, "dog": 0,"unknown":0}
+class_prediction_counts = {"CAT": 0, "DOG": 0, "UNKNOWN": 0}
 model_list = []
 api_stats = Path("metrics/api_stats.json")
 rating_models_api = Path("metrics/model_stats_api.json")
