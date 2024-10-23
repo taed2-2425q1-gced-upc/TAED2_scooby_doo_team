@@ -6,28 +6,14 @@
             "batch_size": 16,
             "learning_rate": 1e-05,
             "num_epochs": 1,
-            "weight_decay": 0,
-            "momentum": 0,
-            "optimizer": "adam",
+            "weight_decay": 0.0,
+            "momentum": 0.95,
+            "optimizer": "sgd",
             "name_model": "Model_1"
         },
-        "metrics": 82.68292682926828
+        "metrics": 32.4390243902439
     },
     "Model_2": {
-        "params": {
-            "algorithm": "VisualTransformer",
-            "model_name": "google/vit-base-patch16-224",
-            "batch_size": 32,
-            "learning_rate": 1e-05,
-            "num_epochs": 1,
-            "weight_decay": 0,
-            "momentum": 0,
-            "optimizer": "adam",
-            "name_model": "Model_2"
-        },
-        "metrics": 84.39024390243902
-    },
-    "Model_3": {
         "params": {
             "algorithm": "VisualTransformer",
             "model_name": "google/vit-base-patch16-224",
@@ -37,8 +23,22 @@
             "weight_decay": 0,
             "momentum": 0,
             "optimizer": "adam",
+            "name_model": "Model_2"
+        },
+        "metrics": 96.58536585365853
+    },
+    "Model_3": {
+        "params": {
+            "algorithm": "VisualTransformer",
+            "model_name": "google/vit-base-patch16-224",
+            "batch_size": 16,
+            "learning_rate": 1e-05,
+            "num_epochs": 1,
+            "weight_decay": 0.1,
+            "momentum": 0.9,
+            "optimizer": "sgd",
             "name_model": "Model_3"
         },
-        "metrics": 94.8780487804878
+        "metrics": 44.63414634146341
     }
 }

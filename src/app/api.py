@@ -222,6 +222,7 @@ def _get_models_list():
         model_dict = {
             "name": model_name,
             "validation_accuracy": accuracy,
+            "rate": ratings_data[model_name]["average_rating"] if model_name in ratings_data else "Not rated",
         }
         available_models.append(model_dict)
 
@@ -234,7 +235,7 @@ def _get_models_list():
 
 
 
-@app.post("/predict",tags=["Prediction"])
+@app.post("/predict/{model_name}",tags=["Prediction"])
 async def predict_image(model_name: str,files: List[UploadFile]):
     '''
     Classifies an image using one of our trained models.
@@ -256,7 +257,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
     model = model_list[model_idx]
     for file in files:
         if file.filename.endswith('.zip'):
-            # Extraer el contenido del ZIP
             with zipfile.ZipFile(io.BytesIO(await file.read())) as zip_file:
                 for zip_info in zip_file.infolist():
                     if zip_info.filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
@@ -264,13 +264,12 @@ async def predict_image(model_name: str,files: List[UploadFile]):
                         image_bytes = zip_file.read(zip_info.filename)
                         image_tensor = image_to_tensor(image_bytes)
                         
-                        # Realizar la predicción para cada imagen dentro del ZIP
                         logits = model(image_tensor).logits.detach()[0]
                         probabilities = torch.softmax(logits, dim=0).numpy()
                         probabilities = [round(float(p), 3) for p in probabilities]
                         prediction_score = np.argmax(probabilities)
 
-                        if probabilities[prediction_score] < 0.7:
+                        if probabilities[prediction_score] < 0.58:
                             prediction = "unknown"
                         else:
                             if prediction_score == 0:
@@ -280,7 +279,6 @@ async def predict_image(model_name: str,files: List[UploadFile]):
 
                         class_prediction_counts[prediction] += 1
 
-                        # Añadir los resultados para cada imagen en el ZIP
                         results.append({
                             "filename": zip_info.filename,
                             "message": HTTPStatus.OK.phrase,
@@ -311,7 +309,7 @@ async def predict_image(model_name: str,files: List[UploadFile]):
             probabilities = torch.softmax(logits, dim=0).numpy()
             probabilities = [round(float(p), 3) for p in probabilities]
             prediction_score = np.argmax(probabilities)
-            if probabilities[prediction_score] < 0.85:
+            if probabilities[prediction_score] < 0.58:
                 prediction = "unknown"
             else:
                 if prediction_score == 0:
@@ -407,7 +405,7 @@ async def health_check(Model_name: str):
     
 
 
-@app.post("/models/rate", tags=["Rate models and API"])
+@app.post("/models/rate/{model_name}", tags=["Rate models and API"])
 def rate_model(model_name: str, rating: int):
     """
     Allow the user to rate a model from 1 to 5.
@@ -441,30 +439,6 @@ def rate_model(model_name: str, rating: int):
     save_rating_models_to_csv(model_name,rating)
 
     return {"message": "Rating added successfully"}
-
-
-
-@app.get("/models/rating", tags=["Models"])
-def get_model_rating(model_name: str):
-    """
-    Get the average rating of a specific model
-
-    @param model_name: the name of the model to get the rating. The structure of the model name is "Model_<model_number>"
-    @returns: the average rating of the model of the last 30 ratings
-    """
-    idx = int(model_name.split("_")[-1]) - 1
-    if idx >= len(model_list):
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail="Model not found. Please check the model name and try again.",
-        )
-    if model_name not in ratings_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Model not rated yet")
-
-    return {
-        "model_name": model_name,
-        "average_rating": ratings_data[model_name]["average_rating"],
-    }
 
 
 

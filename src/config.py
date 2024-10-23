@@ -15,6 +15,7 @@ DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
+TEST_IMAGE_DIR = PROJ_ROOT / "tests" / "pytest_images"
 
 PREPROCESSING = 1
 TRAINING = 1
