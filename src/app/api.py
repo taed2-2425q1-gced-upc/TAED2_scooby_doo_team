@@ -222,6 +222,7 @@ def _get_models_list():
         model_dict = {
             "name": model_name,
             "validation_accuracy": accuracy,
+            "rate": ratings_data[model_name]["average_rating"] if model_name in ratings_data else "Not rated",
         }
         available_models.append(model_dict)
 
@@ -438,30 +439,6 @@ def rate_model(model_name: str, rating: int):
     save_rating_models_to_csv(model_name,rating)
 
     return {"message": "Rating added successfully"}
-
-
-
-@app.get("/models/rating/{model_name}", tags=["Models"])
-def get_model_rating(model_name: str):
-    """
-    Get the average rating of a specific model
-
-    @param model_name: the name of the model to get the rating. The structure of the model name is "Model_<model_number>"
-    @returns: the average rating of the model of the last 30 ratings
-    """
-    idx = int(model_name.split("_")[-1]) - 1
-    if idx >= len(model_list):
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail="Model not found. Please check the model name and try again.",
-        )
-    if model_name not in ratings_data:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Model not rated yet")
-
-    return {
-        "model_name": model_name,
-        "average_rating": ratings_data[model_name]["average_rating"],
-    }
 
 
 
