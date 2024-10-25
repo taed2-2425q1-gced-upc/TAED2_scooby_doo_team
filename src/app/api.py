@@ -22,6 +22,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 from torchinfo import summary
+import re
 
 class_prediction_counts = {"cat": 0, "dog": 0,"unknown":0}
 model_list = []
@@ -217,7 +218,7 @@ def _get_models_list():
     with open("metrics/scores.json", "r") as scores_file:
         scores_dict = json.load(scores_file)
 
-    for model_name in scores_dict.keys():
+    for model_name in scores_dict:
         accuracy = scores_dict[model_name]["metrics"]
         model_dict = {
             "name": model_name,
@@ -345,33 +346,42 @@ async def model_stats(Model_name: str):
     @returns: the summary of the model
    """
    global model_list
-   
-   model_idx = int(Model_name.split("_")[-1]) - 1
-   if model_idx >= len(model_list):
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Model not found. Please check the model name and try again.",
-            ) 
-   model = model_list[model_idx]
    try:
-       model_summary = get_model_summary(model)
-       summary_str = str(model_summary)
-       status_code = HTTPStatus.OK
+        model_idx_str = Model_name.split("_")[-1]
+        if not model_idx_str.isdigit():
+                    raise ValueError(f"Invalid model number in Model_name: '{model_idx_str}'")
+                
+        model_idx = int(model_idx_str) - 1
+        if model_idx < 0 or model_idx >= len(model_list):
+                    raise HTTPException(
+                        status_code=HTTPStatus.BAD_REQUEST,
+                        detail="Model not found. Please check the model name and try again.",
+                    ) 
+        model = model_list[model_idx]
+        try:
+            model_summary = get_model_summary(model)
+            summary_str = str(model_summary)
+            status_code = HTTPStatus.OK
 
 
-       return HTMLResponse(
-           content=f"""{summary_str},
-           Status Code: {status_code}
-           """
-       )
+            return HTMLResponse(
+                content=f"""{summary_str},
+                Status Code: {status_code}
+                """
+            )
 
 
-   except Exception as e:
-       return {
-           "message": "Error fetching model stats",
-           "status-code": HTTPStatus.INTERNAL_SERVER_ERROR,
-           "details": str(e)
-       }
+        except Exception as e:
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail=f"Error fetching model stats: {str(e)}"
+            )
+        
+   except ValueError as ve:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=str(ve)
+        )
 
 
 
@@ -385,25 +395,40 @@ async def health_check(Model_name: str):
     @returns: the status of the API and the model
     """
     global model_list
-    model_idx = int(Model_name.split("_")[-1]) - 1
-    if model_idx >= len(model_list):
+
+    if not re.match(r"^Model_\d+$", Model_name):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail="Model not found. Please check the model name and try again.",
+            detail="Invalid model name format. Ensure it follows 'Model_<number>'"
         )
-    model = model_list[model_idx]
-
     try:
+         
+        model_idx = int(Model_name.split("_")[-1]) - 1
+
+        if not (0 <= model_idx < len(model_list)):
+            raise ValueError(f"Model not found. Please check the model name and try again."
+            )
+
+        model = model_list[model_idx]
+
         # Check if model is loaded and ready
         model_status = "loaded" if model is not None else "not loaded"
         return {
             "status": "API is up and running!",
             "model_status": model_status
         }
-    except Exception as e:
-        return {"status": "API has issues", "error": str(e)}
     
-
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=str(ve)
+        )
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error: {str(e)}"
+        )
 
 @app.post("/models/rate/{model_name}", tags=["Rate models and API"])
 def rate_model(model_name: str, rating: int):
@@ -449,9 +474,18 @@ def rate_api(rating: int):
 
     @param rating: la calificación a asignar a la API. Debe ser un entero entre 1 y 5.
     """
+    try:
+        if rating < 1 or rating > 5:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
+        save_rating_api_to_csv(rating)
 
-    if rating < 1 or rating > 5:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Rating must be between 1 and 5")
-    save_rating_api_to_csv(rating)
-
-    return {"message": "Rating added successfully"}
+        return {"message": "Rating added successfully"}
+    
+    except HTTPException as http_err:
+        raise http_err
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 
+            detail=f"Unexpected error: {str(e)}"
+        )
