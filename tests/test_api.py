@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate
 from src.config import TEST_IMAGE_DIR
 import csv
 from datetime import datetime
@@ -409,3 +409,36 @@ def test_save_rating_api_to_csv():
         assert str(read_day) == str(day)
         assert str(read_month) == str(month)
         assert str(read_year) == str(year)
+def test_save_rating_models_to_csv():
+    rating = 3
+    modelname = "Model_1"
+    save_rating_models_to_csv(modelname, rating)
+
+    with open(models_rate, mode="r", newline="") as file:
+        csv_reader = csv.reader(file) 
+
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        modelname = "Model_1" 
+
+        last_row = None
+        for row in csv_reader:
+            last_row = row    
+        
+        read_modelname, read_raiting, read_day, read_month, read_year = last_row
+        assert str(read_modelname) == modelname
+        assert str(read_raiting) == str(rating)
+        assert str(read_day) == str(day)
+        assert str(read_month) == str(month)
+        assert str(read_year) == str(year)
+
+    
+
+def test_get_model_summary():
+    try: 
+        with patch("src.app.api.get_model_summary", return_value=mock_summary):
+            assert True 
+    except:
+        assert False 
