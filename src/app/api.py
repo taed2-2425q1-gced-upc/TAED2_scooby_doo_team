@@ -454,7 +454,7 @@ def rate_model(model_name: str, rating: int):
         ratings_data[model_name]["ratings"] = []
     if "average_rating" not in ratings_data[model_name]:
         ratings_data[model_name]["average_rating"] = 0
-    print(ratings_data)
+        
     ratings_data[model_name]["ratings"].append(rating)
     if len(ratings_data[model_name]["ratings"]) > 30:
         ratings_data[model_name]["ratings"].pop(0)

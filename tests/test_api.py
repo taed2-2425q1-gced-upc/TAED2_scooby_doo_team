@@ -8,8 +8,11 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, get_model_summary, ratings_data
 from src.config import TEST_IMAGE_DIR
+import csv
+from datetime import datetime
+from torchvision import models
 
 #TEST_IMAGES_DIR = "/tests/pytest_images"
 
@@ -18,6 +21,11 @@ from src.config import TEST_IMAGE_DIR
 def client():
     with TestClient(app) as client:
         yield client
+
+def test_load_ratings():
+    with open(rating_models_api, "r") as f:
+        assert json.load(f)
+    assert rating_models_api
 
 def test_read_root(client):
     response = client.get("/")
@@ -78,8 +86,11 @@ def test_rate_api_unexpected_exception(client):
 def test_rate_model_valid_rate(client):
     # Simular la función para guardar la calificación del modelo en un archivo CSV
     with patch("src.app.api.save_rating_models_to_csv") as mock_save:
+        model_name = "Model_1"
 
         response = client.post("/models/rate/Model_1?rating=4")
+        assert ratings_data[model_name]["average_rating"] == round(sum(ratings_data[model_name]["ratings"]) / len(ratings_data[model_name]["ratings"]), 2)
+
         assert response.status_code == HTTPStatus.OK
         assert response.json()["message"] == "Rating added successfully"
         mock_save.assert_called_once_with("Model_1", 4)
@@ -384,3 +395,78 @@ def test_predict_image_webp_file(client):
     results = response.json()["results"]
     assert len(results) == 1 
     assert results[0]["class"] in ["cat", "dog", "unknown"]  
+
+def delete_last_row(file_path):
+    with open(file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    if rows:  
+        rows.pop() 
+
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(rows)  
+
+
+def test_save_rating_api_to_csv():
+
+    raiting = 5
+    save_rating_api_to_csv(raiting)
+    with open(rating_api, mode="r", newline="") as file:
+        csv_reader = csv.reader(file)   
+
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        
+        last_row = None
+        for row in csv_reader:
+            last_row = row  # This will end up being the last row after loop finishes
+        
+        read_raiting, read_day, read_month, read_year = last_row
+
+        assert str(read_raiting) == str(raiting)
+        assert str(read_day) == str(day)
+        assert str(read_month) == str(month)
+        assert str(read_year) == str(year)
+    
+    delete_last_row(rating_api)
+
+
+def test_save_rating_models_to_csv():
+    rating = 3
+    modelname = "Model_1"
+    save_rating_models_to_csv(modelname, rating)
+
+    with open(models_rate, mode="r", newline="") as file:
+        csv_reader = csv.reader(file) 
+
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        modelname = "Model_1" 
+
+        last_row = None
+        for row in csv_reader:
+            last_row = row    
+        
+        read_modelname, read_raiting, read_day, read_month, read_year = last_row
+        assert str(read_modelname) == modelname
+        assert str(read_raiting) == str(rating)
+        assert str(read_day) == str(day)
+        assert str(read_month) == str(month)
+        assert str(read_year) == str(year)
+    
+    delete_last_row(models_rate)
+
+
+def test_get_model_summary():
+    try: 
+        model = models.resnet18()
+        get_model_summary(model)
+        assert True
+    except:
+        assert False 

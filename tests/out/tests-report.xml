@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="4" failures="1" skipped="0" tests="16" time="14.924" timestamp="2024-10-27T18:54:54.263421+01:00" hostname="oriol-Aspire-A515-56"><testcase classname="tests.test_models" name="test_load_data" time="1.457" /><testcase classname="tests.test_models" name="test_load_params_prepare" time="0.005" /><testcase classname="tests.test_models" name="test_load_params_yaml_error" time="0.004" /><testcase classname="tests.test_models" name="test_split_data" time="0.705" /><testcase classname="tests.test_models" name="test_save_data" time="3.374" /><testcase classname="tests.test_models" name="test_preapare_train_dataloaders" time="0.596" /><testcase classname="tests.test_models" name="test_get_combine_hyperparameters" time="0.000" /><testcase classname="tests.test_models" name="test_prepare_hyperparameters_combinations" time="0.000" /><testcase classname="tests.test_models" name="test_get_model" time="1.041" /><testcase classname="tests.test_models" name="test_get_optimizer" time="0.003"><error message="failed on setup with &quot;FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'&quot;">@pytest.fixture
+    def best_model():
+        """
+        Returns the best model from the models folder.
+        It is a fixture to be used in the test_best_model function
+        """
+        #open the scores.json file to get the name of the best model
+        with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
+            data_scores = json.load(file)
+        #recorrer los modelos y seleccionar la key con el mejor score
+        best_model_name = None
+        best_score = 0
+        for model_name, value in data_scores.items():
+            if value["metrics"] &gt; best_score:
+                best_score = value["metrics"]
+                best_model_name = model_name
+        best_model_name = best_model_name + ".pkl"
+        #return the best model
+&gt;       with open(MODELS_DIR / best_model_name, "rb") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'
+
+test_models.py:142: FileNotFoundError</error></testcase><testcase classname="tests.test_models" name="test_prepare_training_objects" time="1.621" /><testcase classname="tests.test_models" name="test_train" time="0.000"><error message="failed on setup with &quot;FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'&quot;">@pytest.fixture
+    def best_model():
+        """
+        Returns the best model from the models folder.
+        It is a fixture to be used in the test_best_model function
+        """
+        #open the scores.json file to get the name of the best model
+        with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
+            data_scores = json.load(file)
+        #recorrer los modelos y seleccionar la key con el mejor score
+        best_model_name = None
+        best_score = 0
+        for model_name, value in data_scores.items():
+            if value["metrics"] &gt; best_score:
+                best_score = value["metrics"]
+                best_model_name = model_name
+        best_model_name = best_model_name + ".pkl"
+        #return the best model
+&gt;       with open(MODELS_DIR / best_model_name, "rb") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'
+
+test_models.py:142: FileNotFoundError</error></testcase><testcase classname="tests.test_models" name="test_load_image" time="0.001"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/tests/data/processed/valid_images/dogs/image_valid_0.jpg'">sample_image = 'data/processed/valid_images/dogs/image_valid_0.jpg'
+
+    def test_load_image(sample_image):
+        """
+        Function to test the load_image function
+        """
+&gt;       img = load_image(sample_image)
+
+test_models.py:426: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../src/models/evaluate.py:33: in load_image
+    image = Image.open(image_path).convert("RGB")  # Asegúrate de que la imagen esté en RGB
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fp = 'data/processed/valid_images/dogs/image_valid_0.jpg', mode = 'r'
+formats = ['BMP', 'DIB', 'GIF', 'JPEG', 'PPM', 'PNG', ...]
+
+    def open(
+        fp: StrOrBytesPath | IO[bytes],
+        mode: Literal["r"] = "r",
+        formats: list[str] | tuple[str, ...] | None = None,
+    ) -&gt; ImageFile.ImageFile:
+        """
+        Opens and identifies the given image file.
+    
+        This is a lazy operation; this function identifies the file, but
+        the file remains open and the actual image data is not read from
+        the file until you try to process the data (or call the
+        :py:meth:`~PIL.Image.Image.load` method).  See
+        :py:func:`~PIL.Image.new`. See :ref:`file-handling`.
+    
+        :param fp: A filename (string), os.PathLike object or a file object.
+           The file object must implement ``file.read``,
+           ``file.seek``, and ``file.tell`` methods,
+           and be opened in binary mode. The file object will also seek to zero
+           before reading.
+        :param mode: The mode.  If given, this argument must be "r".
+        :param formats: A list or tuple of formats to attempt to load the file in.
+           This can be used to restrict the set of formats checked.
+           Pass ``None`` to try all supported formats. You can print the set of
+           available formats by running ``python3 -m PIL`` or using
+           the :py:func:`PIL.features.pilinfo` function.
+        :returns: An :py:class:`~PIL.Image.Image` object.
+        :exception FileNotFoundError: If the file cannot be found.
+        :exception PIL.UnidentifiedImageError: If the image cannot be opened and
+           identified.
+        :exception ValueError: If the ``mode`` is not "r", or if a ``StringIO``
+           instance is used for ``fp``.
+        :exception TypeError: If ``formats`` is not ``None``, a list or a tuple.
+        """
+    
+        if mode != "r":
+            msg = f"bad mode {repr(mode)}"  # type: ignore[unreachable]
+            raise ValueError(msg)
+        elif isinstance(fp, io.StringIO):
+            msg = (  # type: ignore[unreachable]
+                "StringIO cannot be used to open an image. "
+                "Binary data must be used instead."
+            )
+            raise ValueError(msg)
+    
+        if formats is None:
+            formats = ID
+        elif not isinstance(formats, (list, tuple)):
+            msg = "formats must be a list or tuple"  # type: ignore[unreachable]
+            raise TypeError(msg)
+    
+        exclusive_fp = False
+        filename: str | bytes = ""
+        if is_path(fp):
+            filename = os.path.realpath(os.fspath(fp))
+    
+        if filename:
+&gt;           fp = builtins.open(filename, "rb")
+E           FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/tests/data/processed/valid_images/dogs/image_valid_0.jpg'
+
+../../venv/lib/python3.10/site-packages/PIL/Image.py:3469: FileNotFoundError</failure></testcase><testcase classname="tests.test_models" name="test_preapare_validation_dataloaders" time="1.103" /><testcase classname="tests.test_models" name="test_evaluate_model" time="0.001"><error message="failed on setup with &quot;FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'&quot;">@pytest.fixture
+    def best_model():
+        """
+        Returns the best model from the models folder.
+        It is a fixture to be used in the test_best_model function
+        """
+        #open the scores.json file to get the name of the best model
+        with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
+            data_scores = json.load(file)
+        #recorrer los modelos y seleccionar la key con el mejor score
+        best_model_name = None
+        best_score = 0
+        for model_name, value in data_scores.items():
+            if value["metrics"] &gt; best_score:
+                best_score = value["metrics"]
+                best_model_name = model_name
+        best_model_name = best_model_name + ".pkl"
+        #return the best model
+&gt;       with open(MODELS_DIR / best_model_name, "rb") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'
+
+test_models.py:142: FileNotFoundError</error></testcase><testcase classname="tests.test_models" name="test_best_model" time="0.001"><error message="failed on setup with &quot;FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'&quot;">@pytest.fixture
+    def best_model():
+        """
+        Returns the best model from the models folder.
+        It is a fixture to be used in the test_best_model function
+        """
+        #open the scores.json file to get the name of the best model
+        with open(METRICS_DIR / "scores.json", "r", encoding="utf-8") as file:
+            data_scores = json.load(file)
+        #recorrer los modelos y seleccionar la key con el mejor score
+        best_model_name = None
+        best_score = 0
+        for model_name, value in data_scores.items():
+            if value["metrics"] &gt; best_score:
+                best_score = value["metrics"]
+                best_model_name = model_name
+        best_model_name = best_model_name + ".pkl"
+        #return the best model
+&gt;       with open(MODELS_DIR / best_model_name, "rb") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/oriol/Documents/GitHub/TAED2_scooby_doo_team/models/Model_2.pkl'
+
+test_models.py:142: FileNotFoundError</error></testcase></testsuite></testsuites>
