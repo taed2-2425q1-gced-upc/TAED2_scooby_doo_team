@@ -388,6 +388,19 @@ def test_predict_image_webp_file(client):
     assert len(results) == 1 
     assert results[0]["class"] in ["cat", "dog", "unknown"]  
 
+def delete_last_row(file_path):
+    with open(file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    if rows:  
+        rows.pop() 
+
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(rows)  
+
+
 def test_save_rating_api_to_csv():
 
     raiting = 5
@@ -410,6 +423,10 @@ def test_save_rating_api_to_csv():
         assert str(read_day) == str(day)
         assert str(read_month) == str(month)
         assert str(read_year) == str(year)
+    
+    delete_last_row(rating_api)
+
+
 def test_save_rating_models_to_csv():
     rating = 3
     modelname = "Model_1"
@@ -434,8 +451,9 @@ def test_save_rating_models_to_csv():
         assert str(read_day) == str(day)
         assert str(read_month) == str(month)
         assert str(read_year) == str(year)
-
     
+    delete_last_row(models_rate)
+
 
 def test_get_model_summary():
     try: 
