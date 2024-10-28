@@ -8,10 +8,11 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, get_model_summary
 from src.config import TEST_IMAGE_DIR
 import csv
 from datetime import datetime
+from torchvision import models
 
 #TEST_IMAGES_DIR = "/tests/pytest_images"
 
@@ -438,7 +439,8 @@ def test_save_rating_models_to_csv():
 
 def test_get_model_summary():
     try: 
-        with patch("src.app.api.get_model_summary", return_value=mock_summary):
-            assert True 
+        model = models.resnet18()
+        get_model_summary(model)
+        assert True
     except:
         assert False 
