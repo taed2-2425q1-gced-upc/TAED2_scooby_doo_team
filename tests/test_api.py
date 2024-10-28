@@ -8,8 +8,10 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api
 from src.config import TEST_IMAGE_DIR
+import csv
+from datetime import datetime
 
 #TEST_IMAGES_DIR = "/tests/pytest_images"
 
@@ -384,3 +386,26 @@ def test_predict_image_webp_file(client):
     results = response.json()["results"]
     assert len(results) == 1 
     assert results[0]["class"] in ["cat", "dog", "unknown"]  
+
+def test_save_rating_api_to_csv():
+
+    raiting = 5
+    save_rating_api_to_csv(raiting)
+    with open(rating_api, mode="r", newline="") as file:
+        csv_reader = csv.reader(file)   
+
+        current_time = datetime.now()
+        day = current_time.day
+        month = current_time.month
+        year = current_time.year
+        
+        last_row = None
+        for row in csv_reader:
+            last_row = row  # This will end up being the last row after loop finishes
+        
+        read_raiting, read_day, read_month, read_year = last_row
+
+        assert str(read_raiting) == str(raiting)
+        assert str(read_day) == str(day)
+        assert str(read_month) == str(month)
+        assert str(read_year) == str(year)
