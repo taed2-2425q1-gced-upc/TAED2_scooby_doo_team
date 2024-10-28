@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, ratings_data
 from src.config import TEST_IMAGE_DIR
 import csv
 from datetime import datetime
@@ -20,6 +20,11 @@ from datetime import datetime
 def client():
     with TestClient(app) as client:
         yield client
+
+def test_load_ratings():
+    with open(rating_models_api, "r") as f:
+        assert json.load(f)
+    assert rating_models_api
 
 def test_read_root(client):
     response = client.get("/")
@@ -80,8 +85,11 @@ def test_rate_api_unexpected_exception(client):
 def test_rate_model_valid_rate(client):
     # Simular la función para guardar la calificación del modelo en un archivo CSV
     with patch("src.app.api.save_rating_models_to_csv") as mock_save:
+        model_name = "Model_1"
 
         response = client.post("/models/rate/Model_1?rating=4")
+        assert ratings_data[model_name]["average_rating"] == round(sum(ratings_data[model_name]["ratings"]) / len(ratings_data[model_name]["ratings"]), 2)
+
         assert response.status_code == HTTPStatus.OK
         assert response.json()["message"] == "Rating added successfully"
         mock_save.assert_called_once_with("Model_1", 4)
