@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, get_model_summary
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, get_model_summary, ratings_data
 from src.config import TEST_IMAGE_DIR
 import csv
 from datetime import datetime
