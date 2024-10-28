@@ -8,10 +8,11 @@ from fastapi.testclient import TestClient
 from fastapi import UploadFile
 import torch
 from PIL import Image
-from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, ratings_data
+from src.app.api import app, allowed_file_format, image_to_tensor, save_rating_api_to_csv, rating_api, save_rating_models_to_csv, models_rate, rating_models_api, get_model_summary
 from src.config import TEST_IMAGE_DIR
 import csv
 from datetime import datetime
+from torchvision import models
 
 #TEST_IMAGES_DIR = "/tests/pytest_images"
 
@@ -395,6 +396,19 @@ def test_predict_image_webp_file(client):
     assert len(results) == 1 
     assert results[0]["class"] in ["cat", "dog", "unknown"]  
 
+def delete_last_row(file_path):
+    with open(file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    if rows:  
+        rows.pop() 
+
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(rows)  
+
+
 def test_save_rating_api_to_csv():
 
     raiting = 5
@@ -417,6 +431,10 @@ def test_save_rating_api_to_csv():
         assert str(read_day) == str(day)
         assert str(read_month) == str(month)
         assert str(read_year) == str(year)
+    
+    delete_last_row(rating_api)
+
+
 def test_save_rating_models_to_csv():
     rating = 3
     modelname = "Model_1"
@@ -441,12 +459,14 @@ def test_save_rating_models_to_csv():
         assert str(read_day) == str(day)
         assert str(read_month) == str(month)
         assert str(read_year) == str(year)
-
     
+    delete_last_row(models_rate)
+
 
 def test_get_model_summary():
     try: 
-        with patch("src.app.api.get_model_summary", return_value=mock_summary):
-            assert True 
+        model = models.resnet18()
+        get_model_summary(model)
+        assert True
     except:
         assert False 
