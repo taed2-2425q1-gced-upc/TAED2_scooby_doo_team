@@ -102,5 +102,13 @@ Now you simply need to run the api with the following command.
 uvicorn src.app.api:app --host 0.0.0.0 --port 5000 --reload --reload-dir src/app --reload-dir models
 ```
 
+## Tests
+
+Tests for pytest where created by running the following command (you will not find them directly in the repository since reports is in the gitignore.
+
+```bash
+pytest --cov=src --cov-report=html:reports/coverage
+```
+
 --------
 
