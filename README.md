@@ -118,5 +118,9 @@ Reports of pytest where created by running the following command.
 pytest --cov=src --cov-report=html:reports/coverage
 ```
 
+## Contact
+
+- Oriol Lopez Petit: oriol.lopez.petit@estudiantat.upc.edu
+
 --------
 
