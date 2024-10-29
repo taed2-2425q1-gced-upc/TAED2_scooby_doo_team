@@ -140,7 +140,7 @@ Carbon emissions can be estimated using the [Machine Learning Impact calculator]
 - **Cloud Provider:** Trained locally
 - **Compute Region:** Barcelona, Spain
 - **Carbon Emitted:** 0.11g CO2eq 
-- **Power Consumption:** 0.00046 kWh
+- **Energy Consumption:** 0.00046 kWh
 
 ## Technical Specifications
 
