@@ -62,6 +62,14 @@ The project was originally built with cookiecutter's template, and then modified
 
 To run the code follow these instructions: 
 
+**Clone the repository**
+
+Clone the github repository by running the following command:
+
+```bash
+git clone https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team.git
+```
+
 **Create virtual environemnt**
 
 The first thing you will need is python3.10 or higher, to create a virtual environment. There are several ways to do this but in our team did the following steps. First you will need to create a virtual environment with the following command and run it.
