@@ -8,7 +8,7 @@ Software engineering for ML systems
 
 ## Image classification of cats vs dogs 
 
-This project contains all code necessary in order to create an api that exposes models trained for the purpose of image classificaion in the case of a cats vs dogs classification. The data has been selected from a subset of the Assirra dataset and as models we fine-tunned several Vision Transformers. The specific model and data card can be found in the following links:
+This project contains all code necessary in order to create an api that exposes models trained for the purpose of image classificaion, more specifically, for cats vs dogs classification. The data has been selected from a subset of the Assirra dataset and the models selected were fine-tunned Vision Transformers. The specific model and data card can be found in the following links:
 
 - <a target='_blank' href = 'https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/docs/model_card.md'> Model Card </a>
 - <a target = '_blank' href = 'https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/docs/dataset_card.md' > Data Card </a>
