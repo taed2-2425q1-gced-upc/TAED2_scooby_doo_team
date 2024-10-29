@@ -72,7 +72,7 @@ git clone https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team.git
 
 **Create virtual environemnt**
 
-The first thing you will need is python3.10 or higher, to create a virtual environment. There are several ways to do this but in our team did the following steps. First you will need to create a virtual environment with the following command and run it.
+The first thing you will need is python3.10 or higher to create a virtual environment. There are several ways to do this but in our team we did the following steps. First you will need to create a virtual environment with the following command and run it.
 
 ```bash
 python3 -m venv venv
