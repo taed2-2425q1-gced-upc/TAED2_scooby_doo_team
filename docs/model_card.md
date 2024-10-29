@@ -135,11 +135,12 @@ To be measured and completed in the future.
 
 Carbon emissions can be estimated using the [Machine Learning Impact calculator](https://mlco2.github.io/impact#compute) presented in [Lacoste et al. (2019)](https://arxiv.org/abs/1910.09700).
 
-- **Hardware Type:** {{ hardware_type | default("[More Information Needed]", true)}}
-- **Hours used:** {{ hours_used | default("[More Information Needed]", true)}}
-- **Cloud Provider:** {{ cloud_provider | default("[More Information Needed]", true)}}
-- **Compute Region:** {{ cloud_region | default("[More Information Needed]", true)}}
-- **Carbon Emitted:** {{ co2_emitted | default("[More Information Needed]", true)}}
+- **Hardware Type:** CPU - 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+- **Duration:** 118.87 seconds
+- **Cloud Provider:** Trained locally
+- **Compute Region:** Barcelona, Spain
+- **Carbon Emitted:** 0.11g CO2eq 
+- **Power Consumption:** 0.00046 kWh
 
 ## Technical Specifications
 
