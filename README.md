@@ -125,6 +125,9 @@ pytest --cov=src --cov-report=html:reports/coverage
 - Xiao Li Segarra: xiao.li.segarra@estudiantat.upc.edu 
 - Xavier Pacheco Bach: xavier.pacheco.bach@estudiantat.upc.edu 
 
+# Link to API
+
+Our api can be found at: http://nattech.fib.upc.edu:40370/
 
 --------
 
