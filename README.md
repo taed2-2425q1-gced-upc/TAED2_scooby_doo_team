@@ -8,7 +8,7 @@ Software engineering for ML systems
 
 ## Image classification of cats vs dogs 
 
-This project contains all code necessary in order to create an api that exposes models trained for the purpose of image classificaion in the case of a cats vs dogs classification. The data has been selected from a subset of the Assirra dataset and as models we fine-tunned several Vision Transformers. The specific model and data card can be found in the following links:
+This project contains all code necessary in order to create an api that exposes models trained for the purpose of image classificaion, more specifically, for cats vs dogs classification. The data has been selected from a subset of the Assirra dataset and the models selected were fine-tunned Vision Transformers. The specific model and data card can be found in the following links:
 
 - <a target='_blank' href = 'https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/docs/model_card.md'> Model Card </a>
 - <a target = '_blank' href = 'https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team/blob/master/docs/dataset_card.md' > Data Card </a>
@@ -72,7 +72,7 @@ git clone https://github.com/taed2-2425q1-gced-upc/TAED2_scooby_doo_team.git
 
 **Create virtual environemnt**
 
-The first thing you will need is python3.10 or higher, to create a virtual environment. There are several ways to do this but in our team did the following steps. First you will need to create a virtual environment with the following command and run it.
+The first thing you will need is python3.10 or higher to create a virtual environment. There are several ways to do this but in our team we did the following steps. First you will need to create a virtual environment with the following command and run it.
 
 ```bash
 python3 -m venv venv
@@ -117,6 +117,10 @@ Reports of pytest where created by running the following command.
 ```bash
 pytest --cov=src --cov-report=html:reports/coverage
 ```
+
+## Contact
+
+- Oriol Lopez Petit: oriol.lopez.petit@estudiantat.upc.edu
 
 --------
 
