@@ -120,6 +120,11 @@ pytest --cov=src --cov-report=html:reports/coverage
 ## Contact
 
 - Oriol Lopez Petit: oriol.lopez.petit@estudiantat.upc.edu
+- Pablo Gete Alejandro: pablo.gete@estudiantat.upc.edu
+- David Torrecilla Tolosa: david.torrecilla.tolosa@estudiantat.upc.edu
+- Xiao Li Segarra: xiao.li.segarra@estudiantat.upc.edu 
+- Xavier Pacheco Bach: xavier.pacheco.bach@estudiantat.upc.edu 
+
 
 --------
 
