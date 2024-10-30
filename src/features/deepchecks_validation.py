@@ -2,25 +2,20 @@
 In this script we will use the deepchecks library to validate the data integrity 
 of the images in the train, validation, and test datasets, including a custom check for SNR.
 """
-
 from typing import Dict, List
-import numpy as np
-import cv2
 
+import cv2
+import numpy as np
 from deepchecks.core.check_result import CheckResult
+from deepchecks.core.checks import DatasetKind
 from deepchecks.core.condition import ConditionCategory, ConditionResult
 from deepchecks.vision import classification_dataset_from_directory
-from deepchecks.vision.suites import data_integrity, train_test_validation
-from deepchecks.core.checks import DatasetKind
 from deepchecks.vision.base_checks import TrainTestCheck
 from deepchecks.vision.context import Context
+from deepchecks.vision.suites import data_integrity, train_test_validation
 from deepchecks.vision.vision_data.batch_wrapper import BatchWrapper
-from src.config import (
-    REPORTS_DIR,
-    PROCESSED_TEST_IMAGES,
-    PROCESSED_TRAIN_IMAGES,
-    PROCESSED_VALID_IMAGES,
-)
+from src.config import (PROCESSED_TEST_IMAGES, PROCESSED_TRAIN_IMAGES,
+                        PROCESSED_VALID_IMAGES, REPORTS_DIR)
 
 SHARPNESS_MINIMUM_THRESHOLD = 10.0
 

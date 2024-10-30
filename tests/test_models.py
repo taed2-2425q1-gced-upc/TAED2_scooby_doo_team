@@ -135,7 +135,6 @@ def mock_train_parameters():
 
 # Test fixtures
 
-
 @pytest.fixture
 def best_model():
     """
